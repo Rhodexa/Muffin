@@ -1,4 +1,5 @@
 #include "synth.h"
+#include "opl_hal.h"
 
 /*  This represents the properties of an OPL3 operator  */
 struct Operator {
@@ -38,3 +39,11 @@ struct Voice
   bool is_playing;
 }
 
+// updates related to ADSR should only occur when a new voice is triggered to save on bandwidth 
+void opl_setNoteOn(uint8_t voice_index, bool is_on){
+  
+}
+
+void opl_updateADSR(){
+  
+}

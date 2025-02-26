@@ -10,6 +10,28 @@ addr_t inline get_voiceChannelOffset(uint8_t channel){
   return channel + 0x100;
 }
 
+struct Operator {
+  uint8_t
+    REG_20,
+    REG_40,
+    REG_60,
+    REG_80,
+    REG_E0
+  ;
+};
+
+struct Channel {
+   uint8_t
+     REG_A0,
+     REG_B0,
+     REG_C0
+   ;
+}
+
+Operator operator[36];
+Channel channel[18];
+uint8_t REG_BD = 0;
+
 class OPL {
   void update_ChannelBase(uint8_t base, uint8_t voice_index){
     addr_t effective_index = get_voiceChannelOffset(voice_index);

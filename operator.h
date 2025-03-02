@@ -5,7 +5,6 @@
 
 class Operator {
 public:
-  uint16_t offset;
   uint8_t REG_20;
   uint8_t REG_40;
   uint8_t REG_60;
@@ -13,9 +12,7 @@ public:
   uint8_t REG_E0;
 
 public:
-  Operator() : offset(0), REG_20(0), REG_40(0), REG_60(0), REG_80(0), REG_E0(0) {}
-
-  void setAddressOffset(uint16_t offset);
+  Operator() : REG_20(0), REG_40(0), REG_60(0), REG_80(0), REG_E0(0) {}
 
   /* Getters */
   uint8_t getAmplitude();

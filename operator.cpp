@@ -1,9 +1,5 @@
 #include "operator.h"
 
-void Operator::setAddressOffset(uint16_t offset) {
-  this->offset = offset;
-}
-
 /* Getters */
 uint8_t Operator::getAmplitude()  { return (REG_40 & 0x3F) >> 0; }
 uint8_t Operator::getAttack()     { return (REG_60 & 0xF0) >> 4; }

@@ -1,11 +1,7 @@
 #include "pitch.h"
 
 /*
-  A fast MIDI-note to Pitch object converter.
-  Input: A MIDI note index (including fractional part)
-  Output: A Pitch Object containing the scaled base_frequency information for OPL3 and an octave exponent.
-  The midi note object begins at F#0 (MIDI pitch 18)
-  Minimum value is 18, anything below F#0 is ignored (no changes will be issued to the object!)
+  Creates a Pitch object from a semitone value. Minimum number is 18
 */
 
 void Pitch::noteToPitch(unsigned int semitone){

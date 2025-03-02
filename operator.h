@@ -34,6 +34,6 @@ public:
   void setRelease(uint8_t value);
   void setWaveform(uint8_t value);
   void setMultiplier(uint8_t value);
-}
+};
 
 #endif

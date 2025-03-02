@@ -1,5 +1,5 @@
 #include "channel.hpp"
 
-void Channel::setNoteOn(Channel& channel, bool value){
+void Channel::setNoteOn(bool value){
   channel.is_active = value;
 }

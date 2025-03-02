@@ -8,16 +8,4 @@
 
 */
 
-class Instrument {
-  /*
-    Algorithm
-    Vibrato Depth
-    Vibrato Speed
-    Channel X:
-      Multiplier
-      Feedback
-      
-  */
-}
-
 #endif

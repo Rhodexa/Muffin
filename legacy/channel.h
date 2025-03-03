@@ -1,25 +1,21 @@
-#ifndef CHANNEL_H
+#ifdef CHANNEL_H
 #define CHANNEL_H
 
 #include "operator.h"
-#include "pitch.h"
 
-class {
+class Channel {
 public:
-  uint16_t offset;
+  Operator op[2];
   uint8_t REG_A0;
   uint8_t REG_B0;
   uint8_t REG_C0;
-  int multiplier;
-  uint8_t stereo_switches;
-  bool is_active;
 
 public:
-  Operator operator[2];
-  Pitch pitch;
+  uint8_t multiplier;
 
-public:
-  void setNoteOn(bool value);
+  void setKeyOn(uint8_t );
+  void setFrequency(uint16_t fnumber, uint8_t octave);
+  void setStereoSwitch(uint8_t left, uint8_t right);
 };
 
 #endif

@@ -5,6 +5,7 @@
 
 class Voice {
   Channel chan[3];
+  void setAlgorithm(uint8_t algorithm);
 };
 
 #endif

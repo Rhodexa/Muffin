@@ -23,6 +23,11 @@ constexpr uint16_t channel_offset[6][3] = {
   { 0x106, 0x107, 0x108 }
 };
 
-
+namespace Synth {
+  Voice voices[6];
+  uint8_t REG_104;
+  void begin();
+  void setAlgorithm(uint8_t voice, uint8_t algorithm);  
+}
 
 #endif

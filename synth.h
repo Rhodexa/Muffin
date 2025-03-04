@@ -3,6 +3,8 @@
 
 #include "voice.h"
 
+namespace Synth {
+
 // operator_offset[voice][channel][operator]
 constexpr uint16_t operator_offset[6][3][2] = {
   { {0x000, 0x003}, {0x008, 0x00B}, {0x010, 0x013} },
@@ -23,11 +25,18 @@ constexpr uint16_t channel_offset[6][3] = {
   { 0x106, 0x107, 0x108 }
 };
 
-namespace Synth {
-  Voice voices[6];
-  uint8_t REG_104;
-  void begin();
-  void setAlgorithm(uint8_t voice, uint8_t algorithm);  
-}
+constexpr uint16_t lut_base_frq[13] = {
+  488, 517, 547, 580, 614, 651,
+  690, 731, 774, 820, 869, 921,
+  976
+};
 
+Voice voices[6];
+uint8_t REG_104;
+void begin();
+void setAlgorithm(uint8_t voice, uint8_t algorithm);  
+uint16_t pitchToFrequency(uint32_t q16_pitch);
+uint16_t encodeFrequency(uint32_t frequency);
+
+}
 #endif

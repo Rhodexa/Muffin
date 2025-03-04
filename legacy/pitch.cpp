@@ -5,6 +5,7 @@
   ((uint32_t)int_part * 349525) >> 22; // super accurate 1/12 approximation
 */
 
+
 void Pitch::noteToPitch(uint16_t semitone){
   if(semitone >= 18) {
     semitone -= 18;

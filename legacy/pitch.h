@@ -1,6 +1,8 @@
 #ifndef SYNTH_PITCH_H
 #define SYNTH_PITCH_H
 
+
+
 class Pitch {
 private:
   uint16_t lut_base_frq[13] = {

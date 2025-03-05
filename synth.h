@@ -1,6 +1,9 @@
 #ifndef SYNTH_H
 #define SYNTH_H
 
+#include "oplrw.h"
+#include "voice.h"
+#include "instrument.h"
 #include "voice.h"
 
 namespace Synth {
@@ -32,11 +35,9 @@ constexpr uint16_t lut_base_frq[13] = {
 };
 
 Voice voices[6];
-uint8_t REG_104;
 void begin();
-void setAlgorithm(uint8_t voice, uint8_t algorithm);  
 uint16_t pitchToFrequency(uint32_t q16_pitch);
-uint16_t encodeFrequency(uint32_t frequency);
+void handleNoteOn(uint32_t frequency);
 
 }
 #endif

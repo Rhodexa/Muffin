@@ -1,41 +1,40 @@
 #include "m_inst_handler.h"
 
-m_instHandler::m_instHandler(m_inst* m_instrument){
-  m_inst = m_instrument;
+InstrumentHandler::InstrumentHandler(Instrument& instrument) : m_inst(&instrument) {
   m_operator = 0;
   m_channel = 0;
 }
 
-void m_inst::setm_instReference(m_inst* m_instrument) {if(!m_instrument) return; m_inst = m_instrument;}
-void m_inst::selectOperator(uint8_t op){ m_operator = op * 5; } // calculate the offset of the operator in the operator_registers array beforehand for efficiency
-void m_inst::selectChannel(uint8_t ch){ m_channel = ch;}
+void InstrumentHandler::setInstrument(Instrument* instrument) {if(!instrument) return; m_inst = instrument;}
+void InstrumentHandler::selectOperator(uint8_t op){ m_operator = op; }
+void InstrumentHandler::selectChannel(uint8_t ch){ m_channel = ch;}
 
 // Operators
-void m_inst::setUseTremolo(uint8_t value)     { writeRegField(m_inst->operator_registers[m_operator + 0], 0x80, 7, value); }
-void m_inst::setUseVibratro(uint8_t value)    { writeRegField(m_inst->operator_registers[m_operator + 0], 0x40, 6, value); }
-void m_inst::setKeyScaleRate(uint8_t value)   { writeRegField(m_inst->operator_registers[m_operator + 0], 0x10, 4, value); }
-void m_inst::setMultiplier(uint8_t value)     { writeRegField(m_inst->operator_registers[m_operator + 0], 0x0F, 0, value); }
-void m_inst::setKeyScaleLevel(uint8_t value)  { writeRegField(m_inst->operator_registers[m_operator + 1], 0xC0, 6, value); }
-void m_inst::setAmplitude(uint8_t value)      { writeRegField(m_inst->operator_registers[m_operator + 1], 0x3F, 0, value); }
-void m_inst::setAttack(uint8_t value)         { writeRegField(m_inst->operator_registers[m_operator + 2], 0xF0, 4, value); }
-void m_inst::setDecay(uint8_t value)          { writeRegField(m_inst->operator_registers[m_operator + 2], 0x0F, 0, value); }
-void m_inst::setSustain(uint8_t value)        { writeRegField(m_inst->operator_registers[m_operator + 3], 0xF0, 4, value); }
-void m_inst::setRelease(uint8_t value)        { writeRegField(m_inst->operator_registers[m_operator + 3], 0x0F, 0, value); }
-void m_inst::setWaveform(uint8_t value)       { writeRegField(m_inst->operator_registers[m_operator + 4], 0x07, 0, value); }
+void InstrumentHandler::setUseTremolo(uint8_t value)     { writeRegField(m_inst->operator_reg_20[m_operator + 0], 0x80, 7, value); }
+void InstrumentHandler::setUseVibratro(uint8_t value)    { writeRegField(m_inst->operator_reg_20[m_operator + 0], 0x40, 6, value); }
+void InstrumentHandler::setKeyScaleRate(uint8_t value)   { writeRegField(m_inst->operator_reg_20[m_operator + 0], 0x10, 4, value); }
+void InstrumentHandler::setMultiplier(uint8_t value)     { writeRegField(m_inst->operator_reg_20[m_operator + 0], 0x0F, 0, value); }
+void InstrumentHandler::setKeyScaleLevel(uint8_t value)  { writeRegField(m_inst->operator_reg_40[m_operator + 1], 0xC0, 6, value); }
+void InstrumentHandler::setAmplitude(uint8_t value)      { writeRegField(m_inst->operator_reg_40[m_operator + 1], 0x3F, 0, value); }
+void InstrumentHandler::setAttack(uint8_t value)         { writeRegField(m_inst->operator_reg_60[m_operator + 2], 0xF0, 4, value); }
+void InstrumentHandler::setDecay(uint8_t value)          { writeRegField(m_inst->operator_reg_60[m_operator + 2], 0x0F, 0, value); }
+void InstrumentHandler::setSustain(uint8_t value)        { writeRegField(m_inst->operator_reg_80[m_operator + 3], 0xF0, 4, value); }
+void InstrumentHandler::setRelease(uint8_t value)        { writeRegField(m_inst->operator_reg_80[m_operator + 3], 0x0F, 0, value); }
+void InstrumentHandler::setWaveform(uint8_t value)       { writeRegField(m_inst->operator_reg_E0[m_operator + 4], 0x07, 0, value); }
 
 // Channels
-void m_inst::setFeedback(uint8_t value)       { writeRegField(m_inst->m_inst->channel_reg_C0[m_channel], 0x0E, 1, value); }
-void m_inst::setConnectionType(uin8_t value)  { writeRegField(m_inst->m_inst->channel_reg_C0[m_channel], 0x01, 0, value); }
-void m_inst::setStereoSwitches(uint8_t value) { writeRegField(m_inst->m_inst->channel_reg_C0[m_channel], 0xC0, 6, value); }
-void m_inst::setMultiplier(uint16_t value)    { multiplier[m_channel_index] = value; }
+void InstrumentHandler::setFeedback(uint8_t value)       { writeRegField(m_inst->m_inst->channel_reg_C0[m_channel], 0x0E, 1, value); }
+void InstrumentHandler::setConnectionType(uin8_t value)  { writeRegField(m_inst->m_inst->channel_reg_C0[m_channel], 0x01, 0, value); }
+void InstrumentHandler::setStereoSwitches(uint8_t value) { writeRegField(m_inst->m_inst->channel_reg_C0[m_channel], 0xC0, 6, value); }
+void InstrumentHandler::setMultiplier(uint16_t value)    { multiplier[m_channel_index] = value; }
 
-// m_inst Globals
-void m_inst::setVibratoDepth(){
+// Globals
+void InstrumentHandler::setVibratoDepth(){
   m_inst->vibrato_tremolo_depth_flags &= 0b10111111;
   m_inst->vibrato_tremolo_depth_flags |= (value << 6);
 }
 
-void m_inst::setTremoloDepth(){
+void InstrumentHandler::setTremoloDepth(){
   m_inst->vibrato_tremolo_depth_flags &= 0b01111111;
   m_inst->vibrato_tremolo_depth_flags |= (value << 7);
 }
@@ -55,7 +54,7 @@ void m_inst::setTremoloDepth(){
 // 7 |        |       1 |      1 |        |       1 |
 //   |--------|---------|--------|--------|---------|
 /////////////////////////////////////////////////////////////////////////////
-void m_inst::setAlgorithm(uint8_t value) {
+void InstrumentHandler::setAlgorithm(uint8_t value) {
   m_inst->algorithm = value;
   
   // Set whether the channel uses OP2 or OP4 mode. There's six bits, one for each channel. 1 means 4OP mode.

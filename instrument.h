@@ -3,16 +3,18 @@
 
 typedef struct Instrument {
   /* Global */
-  uint8_t vibrato_tremolo_depth_flags; // Reg 0xBD [DAM, DVB, RYT, BD, SD, TOM, TC, HH] we only use the first two bits, though.
-  uint8_t note_type_select; // Reg 0x008 [-, NTS, -] We... dont't really know what this does. I belive it scales the ADSR differently.
+  // Reg 0xBD [DAM, DVB, RYT, BD, SD, TOM, TC, HH] we only use the first two bits, though.
+  uint8_t vibrato_tremolo_depth_flags; 
+  
+  // Reg 0x008 [-, NTS, -] We... dont't really know what this does. I belive it scales the ADSR differently.
+  uint8_t note_type_select; 
 
   /* Operator */
-  // 0x020 base [Tremolo, Vibrato, Sustain, KSR, Frequency Multiplier]
-  // 0x040 base [KSL, TL]
-  // 0x060 base [AR, DR]
-  // 0x080 base [SL, RR]
-  // 0x0E0 base [WS]
-  uint8_t operator_registers[30];
+  uint8_t operator_reg_20[6]; // 0x020 base [Tremolo, Vibrato, Sustain, KSR, Frequency Multiplier]
+  uint8_t operator_reg_40[6]; // 0x040 base [KSL, TL]
+  uint8_t operator_reg_60[6]; // 0x060 base [AR, DR]
+  uint8_t operator_reg_80[6]; // 0x080 base [SL, RR]
+  uint8_t operator_reg_E0[6]; // 0x0E0 base [WS]
 
   /* Channel */
   // The algorithm is actually a combination of connection_select (Reg 0x104) and the channels' CNT (Reg 0xC0) bits.

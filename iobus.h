@@ -6,7 +6,7 @@
   PB[15···8] (Use 3.3V anyway! It's safer. The STM32F103 is 5V-tolerant ONLY when FULLY POWERED)
 */
 
-namespace iobus {
+namespace IO {
   const unsigned int m_INPUT = 0x44444444;
   const unsigned int m_OUTPUT = 0x11111111;
   const unsigned int m_MASK = 0x0000FF00;

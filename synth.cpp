@@ -26,13 +26,24 @@ uint16_t pitchToFrequency(uint32_t q16_pitch){
   return 0;
 }
 
-void handleNoteOn(uint32_t frenquency, bool is_on){
-  voices[current].setFrequency(pitchToFrequency(frenquency));
-  voices[current].setNoteOn(is_on);
+void handleNoteOn(uint8_t pitch){
+  // Find the next available voice
+  for (uint8_t i = 0; i < 6; i++){
+    m_current_voice++;
+    if (m_current_voice >= 6) m_current_voice = 0;
+    if (voices[m_current_voice].is_active != true) break;
+  }
+  held_key[m_current_voice] = pitch;
+  voices[m_current_voice].setFrequency(pitchToFrequency((pitch + 18) << 16));
+  voices[m_current_voice].setNoteOn(true);
 }
 
-void update(){
-  
+
+void updateOPL(){
+  for (uint8_t v = 0; v < 6; v++) {
+    Voice &voice = voices[v];
+    voice.instrument->
+  }
 }
 
 }

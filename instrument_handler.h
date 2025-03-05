@@ -14,7 +14,7 @@ public:
   InstrumentHandler();
   void selectOperator(uint8_t op);
   void selectChannel (uint8_t ch);
-  void setInstrumentReference(Instrument& inst);
+  void setInstrument(Instrument& inst);
 
 public:
   // Operators

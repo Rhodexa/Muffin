@@ -1,6 +1,7 @@
 #ifndef VOICE_H
 #define VOICE_H
 
+#include <cstdint>
 #include "toolbits.h"
 #include "instrument.h"
 

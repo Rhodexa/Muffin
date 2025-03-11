@@ -1,9 +1,10 @@
 #ifndef SYNTH_H
 #define SYNTH_H
 
-#include "oplrw.h"
-#include "voice.h"
+#include <cstdint>
 #include "instrument.h"
+#include "voice.h"
+#include "oplrw.h"
 
 namespace Synth {
 
@@ -18,14 +19,8 @@ uint8_t m_current_voice = 0;
 uint8_t held_key[6] = {0, 0, 0, 0, 0, 0};
 
 void begin();
-
 uint16_t pitchToFrequency(uint32_t q16_pitch);
-void updateOPL(){
-  for (uint8_t i = 0; i < 6; i++){
-    voices[i].loadToOPL();
-  }
-}
-
+void updateOPL();
 void handleNoteOn(uint8_t pitch);
 
 }

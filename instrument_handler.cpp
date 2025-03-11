@@ -1,4 +1,4 @@
-#include "m_inst_handler.h"
+#include "instrument_handler.h"
 
 InstrumentHandler::InstrumentHandler(Instrument& instrument) : m_inst(&instrument) {
   m_operator = 0;

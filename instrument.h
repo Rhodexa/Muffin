@@ -1,6 +1,8 @@
 #ifndef INSTRUMENT_H
 #define INSTRUMENT_H
 
+#include <cstdint>
+
 typedef struct Instrument {
   /* Global */
   // Reg 0xBD [DAM, DVB, RYT, BD, SD, TOM, TC, HH] we only use the first two bits, though.

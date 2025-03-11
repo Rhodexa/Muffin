@@ -38,11 +38,9 @@ void handleNoteOn(uint8_t pitch){
   voices[m_current_voice].setNoteOn(true);
 }
 
-
 void updateOPL(){
-  for (uint8_t v = 0; v < 6; v++) {
-    Voice &voice = voices[v];
-    voice.instrument->
+  for (uint8_t i = 0; i < 6; i++){
+    voices[i].loadToOPL();
   }
 }
 

@@ -1,8 +1,10 @@
 #ifndef INSTRUMENT_HANDLER_H
 #define INSTRUMENT_HANDLER_H
 
+#include <cstdint>
 #include "toolbits.h"
 #include "instrument.h"
+
 
 class InstrumentHandler {
 private:

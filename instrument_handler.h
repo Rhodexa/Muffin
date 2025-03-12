@@ -41,6 +41,9 @@ public:
   void setAlgorithm(uint8_t value);
   void setVibratoDepth(uint8_t value);
   void setTremoloDepth(uint8_t value);
+
+  // Utils
+  void buildDefaultInstrument();
 };
 
 

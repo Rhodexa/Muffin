@@ -18,6 +18,7 @@ namespace OPL {
     IO::strobeWrite();
 
     IO::setChipSelect(IO::Chips::NONE);
+    delayMicroseconds(1);
   }
 
   uint8_t read(){

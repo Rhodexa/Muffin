@@ -3,6 +3,7 @@
 InstrumentHandler::InstrumentHandler(Instrument& instrument) : m_inst(&instrument) {
   m_operator = 0;
   m_channel = 0;
+  buildDefaultInstrument();
 }
 
 void InstrumentHandler::setActiveInstrument(Instrument& instrument) {m_inst = &instrument;}
@@ -105,4 +106,27 @@ void InstrumentHandler::setAlgorithm(uint8_t value) {
       m_inst->channel_reg_C0[2] |= 0b00000001;
       break;
   }
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// Default instrument is a simple Sine Wave
+void InstrumentHandler::buildDefaultInstrument() {
+  // First, we need to choose which of all 3 channels on this voice to edit.
+  setActiveChannel(0);  // On channel 0 (No 4OP available)
+
+    // Now let's edit this voice's operators
+    setActiveOperator(1); // By default, channels of FM mode, so to hear something we need to edit its carrier (Operator 2)
+      op_setAmplitude(0);      // Max. amplitude
+      op_setAttack(15);        // -
+      op_setDecay(6);          // - Set instantaneous reaction (Max attack and release)
+      op_setSustain(8);       // -
+      op_setRelease(15);       // -
+      op_setWaveform(6);
+      // that's it. CHAN0 -> OP1 is set for sine wave.
+    
+  // Now onto the channel-specific configurations
+  ch_setStereoSwitches(0b11); // Enable sound ouput on Left and Right
+  ch_setMultiplier(1 << 12);  // No frequency scaling
+  // Done. That's all we need for a simple sine wave! (I hope)
 }

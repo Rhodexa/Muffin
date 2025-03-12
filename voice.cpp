@@ -1,4 +1,5 @@
 #include "voice.h"
+#include <Arduino.h>
 
 uint8_t Voice::s_connection_select = 0;
 
@@ -26,6 +27,7 @@ uint16_t Voice::encodeFrequency(uint32_t frequency)
 
 void Voice::loadToOPL()
 {
+  //digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));
   // Iterate through all 3 channels in the voice
   for (uint8_t ch = 0; ch < 3; ch++){
     // Load the channel's operators data
@@ -82,15 +84,16 @@ void Voice::setFrequency(uint32_t frequency)
 void Voice::setNoteOn(bool is_on)
 {
   if (is_on) {
-    if(!m_is_active){
-      m_is_active = true;
+    if(!is_active){
+      is_active = true;
       m_channel_reg_B0[0] |= 0x20;
       m_channel_reg_B0[1] |= 0x20;
       m_channel_reg_B0[2] |= 0x20;
     }
   }
   else {
-    if(m_is_active){
+    if(is_active){
+      is_active = false;
       m_channel_reg_B0[0] &= ~(0x20);
       m_channel_reg_B0[1] &= ~(0x20);
       m_channel_reg_B0[2] &= ~(0x20);

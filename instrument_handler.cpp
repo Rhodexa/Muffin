@@ -10,21 +10,21 @@ void InstrumentHandler::setActiveOperator(uint8_t op){ m_operator = op; }
 void InstrumentHandler::setActiveChannel(uint8_t ch){ m_channel = ch;}
 
 // Operators
-void InstrumentHandler::op_setUseTremolo(uint8_t value)     { Toolbits::writeField(m_inst->operator_reg_20[m_operator + 0], 0x80, 7, value); }
-void InstrumentHandler::op_setUseVibratro(uint8_t value)    { Toolbits::writeField(m_inst->operator_reg_20[m_operator + 0], 0x40, 6, value); }
-void InstrumentHandler::op_setKeyScaleRate(uint8_t value)   { Toolbits::writeField(m_inst->operator_reg_20[m_operator + 0], 0x10, 4, value); }
-void InstrumentHandler::op_setMultiplier(uint8_t value)     { Toolbits::writeField(m_inst->operator_reg_20[m_operator + 0], 0x0F, 0, value); }
-void InstrumentHandler::op_setKeyScaleLevel(uint8_t value)  { Toolbits::writeField(m_inst->operator_reg_40[m_operator + 1], 0xC0, 6, value); }
-void InstrumentHandler::op_setAmplitude(uint8_t value)      { Toolbits::writeField(m_inst->operator_reg_40[m_operator + 1], 0x3F, 0, value); }
-void InstrumentHandler::op_setAttack(uint8_t value)         { Toolbits::writeField(m_inst->operator_reg_60[m_operator + 2], 0xF0, 4, value); }
-void InstrumentHandler::op_setDecay(uint8_t value)          { Toolbits::writeField(m_inst->operator_reg_60[m_operator + 2], 0x0F, 0, value); }
-void InstrumentHandler::op_setSustain(uint8_t value)        { Toolbits::writeField(m_inst->operator_reg_80[m_operator + 3], 0xF0, 4, value); }
-void InstrumentHandler::op_setRelease(uint8_t value)        { Toolbits::writeField(m_inst->operator_reg_80[m_operator + 3], 0x0F, 0, value); }
-void InstrumentHandler::op_setWaveform(uint8_t value)       { Toolbits::writeField(m_inst->operator_reg_E0[m_operator + 4], 0x07, 0, value); }
+void InstrumentHandler::op_setUseTremolo(uint8_t value)     { Toolbits::writeField(m_inst->operator_reg_20[m_channel][m_operator], 0x80, 7, value); }
+void InstrumentHandler::op_setUseVibratro(uint8_t value)    { Toolbits::writeField(m_inst->operator_reg_20[m_channel][m_operator], 0x40, 6, value); }
+void InstrumentHandler::op_setKeyScaleRate(uint8_t value)   { Toolbits::writeField(m_inst->operator_reg_20[m_channel][m_operator], 0x10, 4, value); }
+void InstrumentHandler::op_setMultiplier(uint8_t value)     { Toolbits::writeField(m_inst->operator_reg_20[m_channel][m_operator], 0x0F, 0, value); }
+void InstrumentHandler::op_setKeyScaleLevel(uint8_t value)  { Toolbits::writeField(m_inst->operator_reg_40[m_channel][m_operator], 0xC0, 6, value); }
+void InstrumentHandler::op_setAmplitude(uint8_t value)      { Toolbits::writeField(m_inst->operator_reg_40[m_channel][m_operator], 0x3F, 0, value); }
+void InstrumentHandler::op_setAttack(uint8_t value)         { Toolbits::writeField(m_inst->operator_reg_60[m_channel][m_operator], 0xF0, 4, value); }
+void InstrumentHandler::op_setDecay(uint8_t value)          { Toolbits::writeField(m_inst->operator_reg_60[m_channel][m_operator], 0x0F, 0, value); }
+void InstrumentHandler::op_setSustain(uint8_t value)        { Toolbits::writeField(m_inst->operator_reg_80[m_channel][m_operator], 0xF0, 4, value); }
+void InstrumentHandler::op_setRelease(uint8_t value)        { Toolbits::writeField(m_inst->operator_reg_80[m_channel][m_operator], 0x0F, 0, value); }
+void InstrumentHandler::op_setWaveform(uint8_t value)       { Toolbits::writeField(m_inst->operator_reg_E0[m_channel][m_operator], 0x07, 0, value); }
 
 // Channels
 void InstrumentHandler::ch_setFeedback(uint8_t value)       { Toolbits::writeField(m_inst->channel_reg_C0[m_channel], 0x0E, 1, value); }
-void InstrumentHandler::ch_setStereoSwitches(uint8_t value) { Toolbits::writeField(m_inst->channel_reg_C0[m_channel], 0xC0, 6, value); }
+void InstrumentHandler::ch_setStereoSwitches(uint8_t value) { Toolbits::writeField(m_inst->channel_reg_C0[m_channel], 0x30, 4, value); }
 void InstrumentHandler::ch_setMultiplier(uint16_t value)    { m_inst->multiplier[m_channel] = value; }
 
 // Globals

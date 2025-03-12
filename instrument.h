@@ -12,11 +12,12 @@ typedef struct Instrument {
   uint8_t note_type_select; 
 
   /* Operator */
-  uint8_t operator_reg_20[6]; // 0x020 base [Tremolo, Vibrato, Sustain, KSR, Frequency Multiplier]
-  uint8_t operator_reg_40[6]; // 0x040 base [KSL, TL]
-  uint8_t operator_reg_60[6]; // 0x060 base [AR, DR]
-  uint8_t operator_reg_80[6]; // 0x080 base [SL, RR]
-  uint8_t operator_reg_E0[6]; // 0x0E0 base [WS]
+  //               [channel][operator]
+  uint8_t operator_reg_20[3][2]; // 0x020 base [Tremolo, Vibrato, Sustain, KSR, Frequency Multiplier]
+  uint8_t operator_reg_40[3][2]; // 0x040 base [KSL, TL]
+  uint8_t operator_reg_60[3][2]; // 0x060 base [AR, DR]
+  uint8_t operator_reg_80[3][2]; // 0x080 base [SL, RR]
+  uint8_t operator_reg_E0[3][2]; // 0x0E0 base [WS]
 
   /* Channel */
   // The algorithm is actually a combination of connection_select (Reg 0x104) and the channels' CNT (Reg 0xC0) bits.

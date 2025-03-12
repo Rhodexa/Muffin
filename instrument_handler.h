@@ -7,7 +7,7 @@
 
 
 class InstrumentHandler {
-private:
+public:
   Instrument* m_inst;
   uint8_t m_operator;
   uint8_t m_channel;

@@ -2,6 +2,7 @@
 #define VOICE_H
 
 #include <cstdint>
+#include "opl.h"
 #include "toolbits.h"
 #include "instrument.h"
 
@@ -30,18 +31,21 @@ public:
     { 0x106, 0x107, 0x108 }
   };
 
-  // OPL3-specific memory:
-  uint8_t m_channel_reg_A0[3];
+
+  bool m_is_active;
+  
+  // OPL3-specific memory: Fnumber and Octave
+  uint8_t m_channel_reg_A0[3]; 
   uint8_t m_channel_reg_B0[3];
+  static uint8_t s_connection_select; // shared. represents the state of the 0x104 register... annoying, yes!
   
 public:
-  Voice(uint8_t selfIndex);
+  Voice(uint8_t selfIndex, Instrument& instrument);
+  void setInstrument(Instrument& instrument);
   static uint16_t encodeFrequency(uint32_t frequency);
   void setFrequency(uint32_t frequency);
   void setNoteOn(bool is_on);
-  void setInstrument(Instrument& instr);
   void loadToOPL();
-  //void setVolume(uint8_t volume);
 };
 
 #endif

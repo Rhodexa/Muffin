@@ -13,35 +13,34 @@ private:
   uint8_t m_channel;
 
 public:
-  InstrumentHandler();
-  void selectOperator(uint8_t op);
-  void selectChannel (uint8_t ch);
-  void setInstrument(Instrument& inst);
+  InstrumentHandler(Instrument& instrument);
+  void setActiveOperator(uint8_t op);
+  void setActiveChannel (uint8_t ch);
+  void setActiveInstrument(Instrument& inst);
 
 public:
   // Operators
-  void setAmplitude (uint8_t value);
-  void setAttack    (uint8_t value);
-  void setDecay     (uint8_t value);
-  void setSustain   (uint8_t value);
-  void setRelease   (uint8_t value);
-  void setMultiplier(uint8_t value);
-  void setWaveform  (uint8_t value);
-  void setUseVibratro   (uint8_t value);
-  void setUseTremolo    (uint8_t value);
-  void setKeyScaleRate  (uint8_t value);
-  void setKeyScaleLevel (uint8_t value);
+  void op_setAmplitude (uint8_t value);
+  void op_setAttack    (uint8_t value);
+  void op_setDecay     (uint8_t value);
+  void op_setSustain   (uint8_t value);
+  void op_setRelease   (uint8_t value);
+  void op_setMultiplier(uint8_t value);
+  void op_setWaveform  (uint8_t value);
+  void op_setUseVibratro   (uint8_t value);
+  void op_setUseTremolo    (uint8_t value);
+  void op_setKeyScaleRate  (uint8_t value);
+  void op_setKeyScaleLevel (uint8_t value);
 
   // Channels
-  void setFeedback(uint8_t value);
-  void setConnectionType(uin8_t value);
-  void setStereoSwitches(uint8_t value);
-  void setMultiplier();  
+  void ch_setFeedback(uint8_t value);
+  void ch_setStereoSwitches(uint8_t value);
+  void ch_setMultiplier(uint16_t value);  
 
   // Instrument Globals
-  void setAlgorithm();
-  void setVibratoDepth();
-  void setTremoloDepth();
+  void setAlgorithm(uint8_t value);
+  void setVibratoDepth(uint8_t value);
+  void setTremoloDepth(uint8_t value);
 };
 
 

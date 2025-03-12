@@ -12,43 +12,26 @@
 #include "iobus.h"
 
 namespace Codec {
-  void write(uint8_t address, uint8_t data){    
-    IO::setChipSelect(IO::Chips::CODEC);
+  enum Registers {
+    ADC_LEFT, ADC_RIGHT,
+    OPL_LEFT, OPL_RIGHT,
+    AUX2_LEFT, AUX2_RIGHT,
+    DAC_LEFT, DAC_RIGHT,
+    // ... other registers we don't need
+    ERROR_AND_INITIALIZATION = 11,
+    MODE_AND_ID,
+    LOOPBACK,
+    // ... other registers we don't need
+    ALT_FEATURES1 = 16,
+    ALT_FEATURES2,
+    LINE_LEFT, LINE_RIGHT,
+    // ... other registers we don't need
+    ALT_FEATURES3 = 23,
+    ALT_FEATURES_STATUS
+  };
 
-    IO::setAddress(0);
-    IO::setData(address);
-    IO::setMode(1);
-    IO::strobeWrite();
-
-    delayMicroseconds(3);
-
-    IO::setAddress(1);
-    IO::setData(data);
-    IO::setMode(1);
-    IO::strobeWrite();
-
-    IO::setChipSelect(3);
-  }
-
-  uint8_t read(uint8_t address){
-    IO::setChipSelect(IO::Chips::CODEC);
-
-    IO::setAddress(0);
-    IO::setData(address);
-    IO::setMode(1);
-    IO::strobeWrite();
-
-    delayMicroseconds(3);
-    IO::setMode(0);
-
-    IO::setAddress(1);
-    IO::beginRead();
-    uint8_t data = IO::getData();
-    IO::endRead();
-
-    IO::setChipSelect(3);
-    return data;
-  }
+  void write(uint8_t address, uint8_t data);
+  uint8_t read(uint8_t address);  
 }
 
 #endif

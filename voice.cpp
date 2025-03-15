@@ -3,9 +3,8 @@
 
 uint8_t Voice::s_connection_select = 0;
 
-Voice::Voice(uint8_t selfIndex, Instrument& instrument) : m_inst(&instrument)
+Voice::Voice() : instrument(nullptr)
 {
-  m_selfIndex = selfIndex;
   for (uint8_t i = 0; i < 3; i++){
     m_channel_reg_A0[i] = 0;
     m_channel_reg_B0[i] = 0;
@@ -14,8 +13,13 @@ Voice::Voice(uint8_t selfIndex, Instrument& instrument) : m_inst(&instrument)
 
 void Voice::setInstrument(Instrument& instrument)
 {
-  m_inst = &instrument;
+  this->instrument = &instrument;
 }
+
+void Voice::set(uint8_t flag){ m_flags |= flag;}
+void Voice::clear(uint8_t flag){ m_flags &= ~(flag);}
+bool Voice::check(uint8_t flag){ return m_flags & flag;}
+bool Voice::isActive(){return check(FLAG_IS_ACTIVE);}
 
 uint16_t Voice::encodeFrequency(uint32_t frequency)
 {
@@ -32,50 +36,59 @@ void Voice::loadToOPL()
   for (uint8_t ch = 0; ch < 3; ch++){
     // Load the channel's operators data
     uint16_t offset = operator_offset[m_selfIndex][ch][0];
-    OPL::write(0x20 + offset, m_inst->operator_reg_20[ch][0]);
-    OPL::write(0x40 + offset, m_inst->operator_reg_40[ch][0]);
-    OPL::write(0x60 + offset, m_inst->operator_reg_60[ch][0]);
-    OPL::write(0x80 + offset, m_inst->operator_reg_80[ch][0]);
-    OPL::write(0xE0 + offset, m_inst->operator_reg_E0[ch][0]);
+    OPL::write(0x20 + offset, instrument->operator_reg_20[ch][0]);
+    OPL::write(0x40 + offset, instrument->operator_reg_40[ch][0]);
+    OPL::write(0x60 + offset, instrument->operator_reg_60[ch][0]);
+    OPL::write(0x80 + offset, instrument->operator_reg_80[ch][0]);
+    OPL::write(0xE0 + offset, instrument->operator_reg_E0[ch][0]);
 
     offset = operator_offset[m_selfIndex][ch][1];
-    OPL::write(0x20 + offset, m_inst->operator_reg_20[ch][1]);
-    OPL::write(0x40 + offset, m_inst->operator_reg_40[ch][1]);
-    OPL::write(0x60 + offset, m_inst->operator_reg_60[ch][1]);
-    OPL::write(0x80 + offset, m_inst->operator_reg_80[ch][1]);
-    OPL::write(0xE0 + offset, m_inst->operator_reg_E0[ch][1]);
+    OPL::write(0x20 + offset, instrument->operator_reg_20[ch][1]);
+    OPL::write(0x40 + offset, instrument->operator_reg_40[ch][1]);
+    OPL::write(0x60 + offset, instrument->operator_reg_60[ch][1]);
+    OPL::write(0x80 + offset, instrument->operator_reg_80[ch][1]);
+    OPL::write(0xE0 + offset, instrument->operator_reg_E0[ch][1]);
 
     // load channel data
     offset = channel_offset[m_selfIndex][ch];
-    OPL::write(0xC0 + offset, m_inst->channel_reg_C0[ch]); // Stereo and CNT1
+    OPL::write(0xC0 + offset, instrument->channel_reg_C0[ch]); // Stereo and CNT1
   }
 
   // build register 0x104 (CONNECTION_SEL). (because its shared! ugh! lol)
-  if(m_inst->connection_select) s_connection_select |= (1 << m_selfIndex);
-  else s_connection_select &= ~(1 << m_selfIndex);
+  // algorithms 4, 5, 6 and 7 has 4OP mode enabled
+  if(instrument->algorithm < 4) s_connection_select &= ~(1 << m_selfIndex);
+  else s_connection_select |= (1 << m_selfIndex);
   OPL::write(0x104, s_connection_select);
 
-  for(uint8_t ch = 0; ch < 3; ch++){
-    // Frequency and Note On Registers
-    OPL::write(0xA0 + channel_offset[m_selfIndex][ch], m_channel_reg_A0[ch]);
-    OPL::write(0xB0 + channel_offset[m_selfIndex][ch], m_channel_reg_B0[ch]);
+  OPL::write(0xA0 + channel_offset[m_selfIndex][0], m_channel_reg_A0[0]);
+  OPL::write(0xA0 + channel_offset[m_selfIndex][2], m_channel_reg_A0[2]);
+  OPL::write(0xA0 + channel_offset[m_selfIndex][1], m_channel_reg_A0[1]);
+
+  if(check(FLAG_RETRIGGER)){ // Send key off for a split second to retrigger them
+    clear(FLAG_RETRIGGER);
+    OPL::write(0xB0 + channel_offset[m_selfIndex][0], m_channel_reg_B0[0] & 0b11011111);
+    OPL::write(0xB0 + channel_offset[m_selfIndex][1], m_channel_reg_B0[1] & 0b11011111);
+    OPL::write(0xB0 + channel_offset[m_selfIndex][2], m_channel_reg_B0[2] & 0b11011111);
   }
+  OPL::write(0xB0 + channel_offset[m_selfIndex][0], m_channel_reg_B0[0]);
+  OPL::write(0xB0 + channel_offset[m_selfIndex][1], m_channel_reg_B0[1]);
+  OPL::write(0xB0 + channel_offset[m_selfIndex][2], m_channel_reg_B0[2]);
 }
 
 void Voice::setFrequency(uint32_t frequency)
 {
   uint16_t
-  frequencyEncoded = encodeFrequency((frequency * m_inst->multiplier[0]) >> 12);
+  frequencyEncoded = encodeFrequency((frequency * instrument->multiplier[0]) >> 12);
   m_channel_reg_A0[0] = frequencyEncoded & 0xFF;
   m_channel_reg_B0[0] &= 0xE0;
   m_channel_reg_B0[0] |= (frequencyEncoded >> 8) & 0x1F;
 
-  frequencyEncoded = encodeFrequency((frequency * m_inst->multiplier[1]) >> 12);
+  frequencyEncoded = encodeFrequency((frequency * instrument->multiplier[1]) >> 12);
   m_channel_reg_A0[1] = frequencyEncoded & 0xFF;
   m_channel_reg_B0[1] &= 0xE0;
   m_channel_reg_B0[1] |= (frequencyEncoded >> 8) & 0x1F;
 
-  frequencyEncoded = encodeFrequency((frequency * m_inst->multiplier[2]) >> 12);
+  frequencyEncoded = encodeFrequency((frequency * instrument->multiplier[2]) >> 12);
   m_channel_reg_A0[2] = frequencyEncoded & 0xFF;
   m_channel_reg_B0[2] &= 0xE0;
   m_channel_reg_B0[2] |= (frequencyEncoded >> 8) & 0x1F;
@@ -84,16 +97,20 @@ void Voice::setFrequency(uint32_t frequency)
 void Voice::setNoteOn(bool is_on)
 {
   if (is_on) {
-    if(!is_active){
-      is_active = true;
+    if(!(check(FLAG_IS_ACTIVE))){
+      set(FLAG_IS_ACTIVE);
       m_channel_reg_B0[0] |= 0x20;
       m_channel_reg_B0[1] |= 0x20;
       m_channel_reg_B0[2] |= 0x20;
     }
+    else{
+      set(FLAG_RETRIGGER);
+    }
   }
   else {
-    if(is_active){
-      is_active = false;
+    if(check(FLAG_IS_ACTIVE)){
+      clear(FLAG_IS_ACTIVE);
+      clear(FLAG_RETRIGGER);
       m_channel_reg_B0[0] &= ~(0x20);
       m_channel_reg_B0[1] &= ~(0x20);
       m_channel_reg_B0[2] &= ~(0x20);

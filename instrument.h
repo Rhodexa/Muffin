@@ -25,7 +25,6 @@ typedef struct Instrument {
   uint8_t algorithm;         // 0-7
   uint16_t multiplier[3];    // Literal frequency multiplier in Fixed Point 8.8 format
   uint8_t channel_reg_C0[3]; // Reg 0x0C0 [Stereo Switches, Feedback, Connection Type]
-  uint8_t connection_select; // Reg 0x104 (This is treated as a special case because of the shared nature of the register). Only bit 0 is used as a boolean. Then, the voice processes it in a static shared version of it!
 };
 
 #endif

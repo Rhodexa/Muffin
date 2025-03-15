@@ -8,7 +8,7 @@
 
 class Voice {
 public:
-  Instrument* m_inst;
+  Instrument* instrument;
   uint8_t m_selfIndex;
 
   // operator_offset[voice][channel][operator]
@@ -30,21 +30,31 @@ public:
     { 0x101, 0x104, 0x107 },
     { 0x102, 0x105, 0x108 }
   };
-
-
-  bool is_active;
   
-  // OPL3-specific memory: Fnumber and Octave
+public:
+  // shared. represents the state of the 0x104 register... annoying, yes!
+  static uint8_t s_connection_select;
+
+  // Fnumber and Octave
   uint8_t m_channel_reg_A0[3]; 
   uint8_t m_channel_reg_B0[3];
-  static uint8_t s_connection_select; // shared. represents the state of the 0x104 register... annoying, yes!
+  
+  uint8_t m_flags;
+  enum Flags {
+    FLAG_IS_ACTIVE = 1 << 0,
+    FLAG_RETRIGGER = 1 << 1
+  };
+  bool check(uint8_t flag);
+  void set(uint8_t flag);
+  void clear(uint8_t flag);
 
 public:
-  Voice(uint8_t selfIndex, Instrument& instrument);
+  Voice();
   void setInstrument(Instrument& instrument);
   static uint16_t encodeFrequency(uint32_t frequency);
   void setFrequency(uint32_t frequency);
   void setNoteOn(bool is_on);
+  bool isActive();
   void loadToOPL();
 };
 

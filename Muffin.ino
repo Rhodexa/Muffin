@@ -7,6 +7,7 @@
 #include "instrument.h"
 #include "instrument_handler.h"
 #include "voice.h"
+#include "display.h"
 
 ////
 
@@ -23,10 +24,7 @@ Instrument default_instrument;
 InstrumentHandler handler(default_instrument);
 
 // uglyyyyy
-Voice voices[6] = {
-  Voice(0, default_instrument), Voice(1, default_instrument), Voice(2, default_instrument),
-  Voice(3, default_instrument), Voice(4, default_instrument), Voice(5, default_instrument)
-};
+Voice voices[6];
 uint8_t current_voice = 0;
 uint8_t held_key[6] = {0, 0, 0, 0, 0, 0};
 
@@ -57,14 +55,13 @@ void handleNoteOn(uint8_t pitch){
   for (uint8_t i = 0; i < 5; i++){
     current_voice++;
     if (current_voice >= 6) current_voice = 0;
-    if (voices[current_voice].is_active != true) break;
+    if (!voices[current_voice].isActive()) break;
   }
   held_key[current_voice] = pitch;
   uint32_t frq = pitchToFrequency(pitch << 16);
   voices[current_voice].setFrequency(frq);
-  voices[current_voice].setNoteOn(0);
-  voices[current_voice].loadToOPL();
   voices[current_voice].setNoteOn(true);
+  handler.op_setWaveform(current_voice);
 }
 
 void updateOPL(){
@@ -77,11 +74,33 @@ void updateOPL(){
 
 void setup() {
   Serial.begin(9600);
+  delay(1000);
+
   pinMode(LED_BUILTIN, OUTPUT);
+
+  for(int i = 0; i < 6; i++){
+    voices[i].setInstrument(default_instrument);
+    voices[i].m_selfIndex = i;
+  }
 
   // Initialize IO
   IO::init();
   IO::setMode(0);
+
+  SPI.begin();
+
+  // Init display
+  Display::init();
+  Display::setLEDs(0xFF);
+
+  uint8_t rdat[10] = {
+    0xF0, 0xF3,
+    0xFA, 0xF0,
+    0xF0, 0xFA,
+    0xF0, 0xF0,
+    0xFA, 0xF0,
+  };
+  Display::sendRows(rdat, 10);
 
   // Prepare OPL3
   OPL::write(0x105, 1); // Enable OPL3 Features
@@ -99,7 +118,7 @@ void setup() {
 void loop() {
   MIDI.read();
   updateOPL();
-  delay(5);
+  delay(5); // quick and dirty way to get ~100hz
 }
 
 void midiHandleNoteOn(byte channel, byte note, byte velocity){

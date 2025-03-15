@@ -15,7 +15,7 @@ namespace IO {
   enum Chips {
     CODEC,
     OPL,
-    UNK,
+    GLCD,
     NONE
   };
 

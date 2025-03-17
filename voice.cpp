@@ -2,7 +2,7 @@
 #include <Arduino.h>
 
 
-// Utility methods
+// Utility methods /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void Voice::set(uint8_t flag){ m_flags |= flag;}
 void Voice::clear(uint8_t flag){ m_flags &= ~(flag);}
@@ -17,22 +17,33 @@ uint16_t Voice::encodeFrequency(uint32_t frequency)
   return (exponent << 10) | mantissa;
 }
 
-uint32_t Voice::pitchToFrequency(uint32_t q16_pitch){
-  if (q16_pitch >= (18 << 16) && q16_pitch < (114 << 16)) {
-    q16_pitch -= (18 << 16);
-    uint8_t int_part = (q16_pitch >> 16);
-    uint16_t frc_part =  q16_pitch & 0xFFFF;
-    uint16_t octave = ((uint32_t)int_part * 1366) >> 14;
-    uint8_t index = int_part - octave * 12;
-    uint16_t frq_a = lut_base_frq[index];
-    uint16_t frq_b = lut_base_frq[index + 1];
-    return ( frq_a + ((frc_part * (frq_b - frq_a)) >> 16) ) << (octave+1);
+// Converts MIDI pitch values in Q16.16 format into frequency values
+// The output is 10.546ths of a Hertz (OPL3 base). That is, 1 unit translates to ~0.09482Hz or ~1/10.54587...
+// A value of 0 << 16 means F#1, likewise 12 << 16 means F#2, and so on.
+uint32_t Voice::pitchToFrequency(uint32_t q16_pitch)
+{
+  if (q16_pitch < (114 << 16)) // Pitch 114
+  {
+    // Split the Q16.16 pitch number into its Integer and Fractional components
+    uint32_t pitch_integer_component = (q16_pitch >> 16);
+    uint16_t pitch_fractional_component = q16_pitch & 0xFFFF;
+
+    // Compute octave number using pitch_integer/12 (This bit-shifting magic does just that but avoiding division which can be slow)
+    uint16_t octave = (pitch_integer_component * 1366) >> 14;
+
+    // Get the index into the fnumber lookup table
+    uint8_t lut_index = pitch_integer_component - (12*octave);
+
+    // Interpolate between fnum_a and fnum_b based on the fractional part of pitch
+    // Add in the octave number
+    uint16_t fnum_a = lut_base_fnumber[lut_index];
+    uint16_t fnum_b = lut_base_fnumber[lut_index + 1];
+    return (fnum_a + ((pitch_fractional_component * (fnum_b - fnum_a)) >> 16)) << (octave);
   }
   return 0;
 }
 
-
-// Voice
+// Voice /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 uint8_t Voice::s_connection_select = 0;
 
@@ -45,54 +56,12 @@ Voice::Voice() : instrument(nullptr) {
 
 void Voice::setInstrument(Instrument& instrument) { this->instrument = &instrument; }
 
-void Voice::loadToOPL()
+
+bool Voice::isActive(){return check(FLAG_IS_ACTIVE);}
+
+void Voice::setPitch(uint32_t q16_pitch)
 {
-  //digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));
-  // Iterate through all 3 channels in the voice
-  for (uint8_t ch = 0; ch < 3; ch++){
-    // Load the channel's operators data
-    uint16_t offset = operator_offset[m_selfIndex][ch][0];
-    OPL::write(0x20 + offset, instrument->operator_reg_20[ch][0]);
-    OPL::write(0x40 + offset, instrument->operator_reg_40[ch][0]);
-    OPL::write(0x60 + offset, instrument->operator_reg_60[ch][0]);
-    OPL::write(0x80 + offset, instrument->operator_reg_80[ch][0]);
-    OPL::write(0xE0 + offset, instrument->operator_reg_E0[ch][0]);
-
-    offset = operator_offset[m_selfIndex][ch][1];
-    OPL::write(0x20 + offset, instrument->operator_reg_20[ch][1]);
-    OPL::write(0x40 + offset, instrument->operator_reg_40[ch][1]);
-    OPL::write(0x60 + offset, instrument->operator_reg_60[ch][1]);
-    OPL::write(0x80 + offset, instrument->operator_reg_80[ch][1]);
-    OPL::write(0xE0 + offset, instrument->operator_reg_E0[ch][1]);
-
-    // load channel data
-    offset = channel_offset[m_selfIndex][ch];
-    OPL::write(0xC0 + offset, instrument->channel_reg_C0[ch]); // Stereo and CNT1
-  }
-
-  // build register 0x104 (CONNECTION_SEL). (because its shared! ugh! lol)
-  // algorithms 4, 5, 6 and 7 has 4OP mode enabled
-  if(instrument->algorithm < 4) s_connection_select &= ~(1 << m_selfIndex);
-  else s_connection_select |= (1 << m_selfIndex);
-  OPL::write(0x104, s_connection_select);
-
-  OPL::write(0xA0 + channel_offset[m_selfIndex][0], m_channel_reg_A0[0]);
-  OPL::write(0xA0 + channel_offset[m_selfIndex][2], m_channel_reg_A0[2]);
-  OPL::write(0xA0 + channel_offset[m_selfIndex][1], m_channel_reg_A0[1]);
-
-  if(check(FLAG_RETRIGGER)){ // Send key off for a split second to retrigger them
-    clear(FLAG_RETRIGGER);
-    OPL::write(0xB0 + channel_offset[m_selfIndex][0], m_channel_reg_B0[0] & 0b11011111);
-    OPL::write(0xB0 + channel_offset[m_selfIndex][1], m_channel_reg_B0[1] & 0b11011111);
-    OPL::write(0xB0 + channel_offset[m_selfIndex][2], m_channel_reg_B0[2] & 0b11011111);
-  }
-  OPL::write(0xB0 + channel_offset[m_selfIndex][0], m_channel_reg_B0[0]);
-  OPL::write(0xB0 + channel_offset[m_selfIndex][1], m_channel_reg_B0[1]);
-  OPL::write(0xB0 + channel_offset[m_selfIndex][2], m_channel_reg_B0[2]);
-}
-
-void Voice::setFrequency(uint32_t frequency)
-{
+  uint32_t frequency = pitchToFrequency(q16_pitch);
   uint16_t
   frequencyEncoded = encodeFrequency((frequency * instrument->multiplier[0]) >> 12);
   m_channel_reg_A0[0] = frequencyEncoded & 0xFF;
@@ -134,4 +103,55 @@ void Voice::setNoteOn(bool is_on)
   }
 }
 
-bool Voice::isActive(){return check(FLAG_IS_ACTIVE);}
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void Voice::loadToOPL()
+{
+  // Iterate through all 3 channels in the voice
+  uint16_t voice_offset = (m_index < 4) ? m_index : (m_index + 0xFC);
+  for (uint8_t ch = 0; ch < 3; ch++)
+  {
+    // OP1
+    uint16_t offset = voice_offset + ch*8;
+    // Because OPL3 needs some time to process writes, we do this in two parts, so while OPL3 processes its write, we process the next write's arguments 
+    OPL::write_address(0x20 + offset); OPL::write_data(instrument->operator_reg_20[ch][0]);
+    OPL::write_address(0x40 + offset); OPL::write_data(instrument->operator_reg_40[ch][0]);
+    OPL::write_address(0x60 + offset); OPL::write_data(instrument->operator_reg_60[ch][0]);
+    OPL::write_address(0x80 + offset); OPL::write_data(instrument->operator_reg_80[ch][0]);
+    OPL::write_address(0xE0 + offset); OPL::write_data(instrument->operator_reg_E0[ch][0]);
+
+    // OP2 is always 3 address away from OP1
+    offset += 3;
+    OPL::write_address(0x20 + offset); OPL::write_data(instrument->operator_reg_20[ch][1]);
+    OPL::write_address(0x40 + offset); OPL::write_data(instrument->operator_reg_40[ch][1]);
+    OPL::write_address(0x60 + offset); OPL::write_data(instrument->operator_reg_60[ch][1]);
+    OPL::write_address(0x80 + offset); OPL::write_data(instrument->operator_reg_80[ch][1]);
+    OPL::write_address(0xE0 + offset); OPL::write_data(instrument->operator_reg_E0[ch][1]);    
+  }
+
+  // Stereo and CNT1
+  OPL::write_address(0xC0 + voice_offset + 0); OPL::write_data(instrument->channel_reg_C0[0]); 
+  OPL::write_address(0xC0 + voice_offset + 3); OPL::write_data(instrument->channel_reg_C0[1]);
+  OPL::write_address(0xC0 + voice_offset + 6); OPL::write_data(instrument->channel_reg_C0[2]);
+
+  // build register 0x104 (CONNECTION_SEL). (because its shared! ugh! lol)
+  // algorithms 4, 5, 6 and 7 has 4OP mode enabled
+  if (instrument->algorithm < 4) s_connection_select &= ~(1 << m_index);
+  else                           s_connection_select |=  (1 << m_index);
+  OPL::write_address(0x104); OPL::write_data(s_connection_select);
+
+  // Send Fnumber, Octave and Note On data.
+  OPL::write_address(0xA0 + voice_offset + 0); OPL::write_data(m_channel_reg_A0[0]);
+  OPL::write_address(0xA0 + voice_offset + 3); OPL::write_data(m_channel_reg_A0[2]);
+  OPL::write_address(0xA0 + voice_offset + 6); OPL::write_data(m_channel_reg_A0[1]);
+
+  if(check(FLAG_RETRIGGER)){ // Send key off for a split second to retrigger them
+    clear(FLAG_RETRIGGER);
+    OPL::write_address(0xB0 + voice_offset + 0); OPL::write_data(m_channel_reg_B0[0] & 0b11011111);
+    OPL::write_address(0xB0 + voice_offset + 3); OPL::write_data(m_channel_reg_B0[1] & 0b11011111);
+    OPL::write_address(0xB0 + voice_offset + 6); OPL::write_data(m_channel_reg_B0[2] & 0b11011111);
+  }
+  OPL::write_address(0xB0 + voice_offset + 0); OPL::write_data(m_channel_reg_B0[0]);
+  OPL::write_address(0xB0 + voice_offset + 3); OPL::write_data(m_channel_reg_B0[1]);
+  OPL::write_address(0xB0 + voice_offset + 6); OPL::write_data(m_channel_reg_B0[2]);
+}

@@ -9,34 +9,14 @@
 class Voice {
 public:
   Instrument* instrument;
-  uint8_t m_selfIndex;
+  uint8_t  m_index;
 
-  constexpr uint16_t lut_base_frq[13] = {
+  // This table begins at F#1 and ends at F#2
+  static constexpr uint16_t lut_base_fnumber[13] = {
     488, 517, 547, 580, 614, 651,
     690, 731, 774, 820, 869, 921,
     976
   };
-
-  // operator_offset[voice][channel][operator]
-  static constexpr uint16_t operator_offset[6][3][2] = {
-    { {0x000, 0x003}, {0x008, 0x00B}, {0x010, 0x013} },
-    { {0x001, 0x004}, {0x009, 0x00C}, {0x011, 0x014} },
-    { {0x002, 0x005}, {0x00A, 0x00D}, {0x012, 0x015} },
-    { {0x100, 0x103}, {0x108, 0x10B}, {0x110, 0x113} },
-    { {0x101, 0x104}, {0x109, 0x10C}, {0x111, 0x114} },
-    { {0x102, 0x105}, {0x10A, 0x10D}, {0x112, 0x115} }
-  };
-
-  // channel_offset[voice][channel]
-  static constexpr uint16_t channel_offset[6][3] = {
-    { 0x000, 0x003, 0x006 },
-    { 0x001, 0x004, 0x007 },
-    { 0x002, 0x005, 0x008 },
-    { 0x100, 0x103, 0x106 },
-    { 0x101, 0x104, 0x107 },
-    { 0x102, 0x105, 0x108 }
-  };
-
   
 public:
   // shared. represents the state of the 0x104 register... annoying, yes!
@@ -62,7 +42,7 @@ public:
 public:
   Voice();
   void setInstrument(Instrument& instrument);
-  void setFrequency(uint32_t frequency);
+  void setPitch(uint32_t q16_pitch);
   void setNoteOn(bool is_on);
   bool isActive();
   void loadToOPL();

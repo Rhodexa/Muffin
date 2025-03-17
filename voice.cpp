@@ -1,26 +1,14 @@
 #include "voice.h"
 #include <Arduino.h>
 
-uint8_t Voice::s_connection_select = 0;
 
-Voice::Voice() : instrument(nullptr)
-{
-  for (uint8_t i = 0; i < 3; i++){
-    m_channel_reg_A0[i] = 0;
-    m_channel_reg_B0[i] = 0;
-  }
-}
-
-void Voice::setInstrument(Instrument& instrument)
-{
-  this->instrument = &instrument;
-}
+// Utility methods
 
 void Voice::set(uint8_t flag){ m_flags |= flag;}
 void Voice::clear(uint8_t flag){ m_flags &= ~(flag);}
 bool Voice::check(uint8_t flag){ return m_flags & flag;}
-bool Voice::isActive(){return check(FLAG_IS_ACTIVE);}
 
+// static
 uint16_t Voice::encodeFrequency(uint32_t frequency)
 {
   uint8_t leading_zeroes = __builtin_clz(frequency) - 15;
@@ -28,6 +16,34 @@ uint16_t Voice::encodeFrequency(uint32_t frequency)
   uint16_t mantissa = frequency >> exponent;
   return (exponent << 10) | mantissa;
 }
+
+uint32_t Voice::pitchToFrequency(uint32_t q16_pitch){
+  if (q16_pitch >= (18 << 16) && q16_pitch < (114 << 16)) {
+    q16_pitch -= (18 << 16);
+    uint8_t int_part = (q16_pitch >> 16);
+    uint16_t frc_part =  q16_pitch & 0xFFFF;
+    uint16_t octave = ((uint32_t)int_part * 1366) >> 14;
+    uint8_t index = int_part - octave * 12;
+    uint16_t frq_a = lut_base_frq[index];
+    uint16_t frq_b = lut_base_frq[index + 1];
+    return ( frq_a + ((frc_part * (frq_b - frq_a)) >> 16) ) << (octave+1);
+  }
+  return 0;
+}
+
+
+// Voice
+
+uint8_t Voice::s_connection_select = 0;
+
+Voice::Voice() : instrument(nullptr) {
+  for (uint8_t i = 0; i < 3; i++) {
+    m_channel_reg_A0[i] = 0;
+    m_channel_reg_B0[i] = 0;
+  }
+}
+
+void Voice::setInstrument(Instrument& instrument) { this->instrument = &instrument; }
 
 void Voice::loadToOPL()
 {
@@ -118,3 +134,4 @@ void Voice::setNoteOn(bool is_on)
   }
 }
 
+bool Voice::isActive(){return check(FLAG_IS_ACTIVE);}

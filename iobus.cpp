@@ -29,6 +29,8 @@ namespace IO {
   }
 
   void init() {
+    pinMode(IO_PIN_RESET, OUTPUT);
+    digitalWrite(IO_PIN_RESET, LOW); // Redundant... but just in case!
     // enable Port B's clock
     RCC->APB2ENR |= RCC_APB2ENR_IOPBEN;
 
@@ -46,6 +48,10 @@ namespace IO {
     digitalWrite(IO_PIN_WR, HIGH);
     pinMode(IO_PIN_RD, OUTPUT);
     pinMode(IO_PIN_WR, OUTPUT);
+
+    // Enable devices
+    delay(100);
+    digitalWrite(IO_PIN_RESET, HIGH);
   } 
 
   void setData(uint8_t data) {

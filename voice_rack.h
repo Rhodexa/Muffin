@@ -7,7 +7,7 @@
 
 namespace VoiceRack
 {
-  Voice voices[6];
+  Voice voice[6];
 
   inline init(Instrument* instrument)
   {
@@ -17,8 +17,8 @@ namespace VoiceRack
     // Init voices with a default instrument. We don't want nullptrs hangin' 'round
     for(int i = 0; i < 6; i++)
     {
-      voices[i].setInstrument(instrument);
-      voices[i].index = i;
+      voice[i].setInstrument(instrument);
+      voice[i].index = i;
     }
   }
 }

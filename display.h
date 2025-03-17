@@ -9,6 +9,7 @@
 #include "bitmaps.h"
 // I wanted to use a different display, but i couldn't hack it... so i picked up another one that's sadly smaller...
 // but at least I managed to figure out it uses an ST7565-style driver.
+// Thanks again, El Coco! (cocus.rf.gd)
 
 namespace Display{
 

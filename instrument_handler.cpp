@@ -64,21 +64,25 @@ void InstrumentHandler::voice_setAlgorithm(uint8_t value) {
       instrument->channel_reg_C0[0] &= 0b11111110;
       instrument->channel_reg_C0[1] &= 0b11111110;
       instrument->channel_reg_C0[2] &= 0b11111110;
+      instrument->flags_is_last_in_chain = 0b00111000;
       break;
     case 1: // 2xFM + 1xADD
       instrument->channel_reg_C0[0] |= 0b00000001;
       instrument->channel_reg_C0[1] &= 0b11111110;
       instrument->channel_reg_C0[2] &= 0b11111110;
+      instrument->flags_is_last_in_chain = 0b00111001;
       break;
     case 2: // 1xFM + 2xADD
       instrument->channel_reg_C0[0] |= 0b00000001;
       instrument->channel_reg_C0[1] |= 0b00000001;
       instrument->channel_reg_C0[2] &= 0b11111110;
+      instrument->flags_is_last_in_chain = 0b00111011;
       break;
     case 3: // 3xADD
       instrument->channel_reg_C0[0] |= 0b00000001;
       instrument->channel_reg_C0[1] |= 0b00000001;
       instrument->channel_reg_C0[2] |= 0b00000001;
+      instrument->flags_is_last_in_chain = 0b00111111;
       break;
 
     /* Modes using 4OP */
@@ -86,21 +90,25 @@ void InstrumentHandler::voice_setAlgorithm(uint8_t value) {
       instrument->channel_reg_C0[0] &= 0b11111110;
       instrument->channel_reg_C0[1] &= 0b11111110;
       instrument->channel_reg_C0[2] &= 0b11111110;
+      instrument->flags_is_last_in_chain = 0b00110000;
       break;
     case 5: // 1x4OPFM + 1x2OPADD 
       instrument->channel_reg_C0[0] &= 0b11111110;
       instrument->channel_reg_C0[1] &= 0b11111110;
       instrument->channel_reg_C0[2] |= 0b00000001;
+      instrument->flags_is_last_in_chain = 0b00110100;
       break;
     case 6: // 1x3OPFM + 1xOP + 1x2OPFM
       instrument->channel_reg_C0[0] |= 0b00000001;
       instrument->channel_reg_C0[1] &= 0b11111110;
       instrument->channel_reg_C0[2] &= 0b11111110;
+      instrument->flags_is_last_in_chain = 0b00110001;
       break;
     case 7: // 1x3OPFM + 1xOP + 1x2OPADD
       instrument->channel_reg_C0[0] |= 0b00000001;
       instrument->channel_reg_C0[1] &= 0b11111110;
       instrument->channel_reg_C0[2] |= 0b00000001;
+      instrument->flags_is_last_in_chain = 0b00110101;
       break;
   }
 }
@@ -109,7 +117,10 @@ void InstrumentHandler::voice_setAlgorithm(uint8_t value) {
 
 // Default instrument is a simple Sine Wave
 void InstrumentHandler::buildDefaultInstrument() {
-  voice_setAlgorithm(4); // Use 4OPFM mode with channels 0 and 1, channel 2 is in 2OPFM mode
+  // Use 4OPFM mode with channels 0 and 1, channel 2 is in 2OPFM mode
+  // This would allow anyone to quickly play around with a 4OPFM chain
+  voice_setAlgorithm(4); 
+
   // First, we need to choose which of all 3 channels on this voice to edit.
   // We wanna hear a simple sine by default, this means editing OP4, that is Chan 1 Op 1
   setActiveChannel(1);  // OP3 and OP4
@@ -121,7 +132,7 @@ void InstrumentHandler::buildDefaultInstrument() {
       op_setSustain(8);        // -
       op_setRelease(15);       // -
       op_setWaveform(0);       // Sinewave (default anyway)
-      // that's it. CHAN0 -> OP1 is set for sine wave.
+      // that's it. CHAN1 -> OP1 (OP4) is set for sine wave.
     
   // Now onto the channel-specific configurations
   ch_setStereoSwitches(0b11); // Enable sound ouput on Left and Right

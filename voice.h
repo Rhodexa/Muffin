@@ -9,7 +9,8 @@
 class Voice {
 public:
   Instrument* instrument;
-  uint8_t  m_index;
+  uint8_t m_index;
+  uint8_t m_global_volume;
 
   // This table begins at F#1 and ends at F#2
   static constexpr uint16_t lut_base_fnumber[13] = {
@@ -44,8 +45,10 @@ public:
   void setInstrument(Instrument& instrument);
   void setPitch(uint32_t q16_pitch);
   void setNoteOn(bool is_on);
+  void setVolume(uint8_t volume);
   bool isActive();
   void loadToOPL();
+
 };
 
 #endif

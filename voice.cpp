@@ -103,6 +103,10 @@ void Voice::setNoteOn(bool is_on)
   }
 }
 
+void setVolume(uint8_t volume){
+  m_global_volume = volume;
+}
+
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void Voice::loadToOPL()
@@ -111,22 +115,22 @@ void Voice::loadToOPL()
   uint16_t voice_offset = (m_index < 4) ? m_index : (m_index + 0xFC);
   for (uint8_t ch = 0; ch < 3; ch++)
   {
-    // OP1
     uint16_t offset = voice_offset + ch*8;
-    // Because OPL3 needs some time to process writes, we do this in two parts, so while OPL3 processes its write, we process the next write's arguments 
-    OPL::write_address(0x20 + offset); OPL::write_data(instrument->operator_reg_20[ch][0]);
-    OPL::write_address(0x40 + offset); OPL::write_data(instrument->operator_reg_40[ch][0]);
-    OPL::write_address(0x60 + offset); OPL::write_data(instrument->operator_reg_60[ch][0]);
-    OPL::write_address(0x80 + offset); OPL::write_data(instrument->operator_reg_80[ch][0]);
-    OPL::write_address(0xE0 + offset); OPL::write_data(instrument->operator_reg_E0[ch][0]);
+    for(uint8_t op = 0; op < 2; op++)
+    {
+      OPL::write_address(0x20 + offset); OPL::write_data(instrument->operator_reg_20[ch][op]); // AM | VIB | EGT | KSR | MULT
 
-    // OP2 is always 3 address away from OP1
-    offset += 3;
-    OPL::write_address(0x20 + offset); OPL::write_data(instrument->operator_reg_20[ch][1]);
-    OPL::write_address(0x40 + offset); OPL::write_data(instrument->operator_reg_40[ch][1]);
-    OPL::write_address(0x60 + offset); OPL::write_data(instrument->operator_reg_60[ch][1]);
-    OPL::write_address(0x80 + offset); OPL::write_data(instrument->operator_reg_80[ch][1]);
-    OPL::write_address(0xE0 + offset); OPL::write_data(instrument->operator_reg_E0[ch][1]);    
+      // If this op is last in the chain of the current algorithm, let's overwrite its Total Level value with the global volume value.
+      uint8_t reg_40_reformat = instrument->operator_reg_40[ch][op];
+      if (is_last_in_chain[instrument->algorithm] & (1 >> (ch + offset)))
+        reg_40_reformat = (reg_40_reformat & 0xC0) | m_volume;
+
+      OPL::write_address(0x40 + offset); OPL::write_data(reg_40_reformat);                     // KSL | Total Level
+      OPL::write_address(0x60 + offset); OPL::write_data(instrument->operator_reg_60[ch][op]); // ATTACK  | DECAY
+      OPL::write_address(0x80 + offset); OPL::write_data(instrument->operator_reg_80[ch][op]); // SUSTAIN | RELEASE
+      OPL::write_address(0xE0 + offset); OPL::write_data(instrument->operator_reg_E0[ch][op]); // Waveform
+      offset += 3;
+    }  
   }
 
   // Stereo and CNT1
@@ -140,6 +144,7 @@ void Voice::loadToOPL()
   else                           s_connection_select |=  (1 << m_index);
   OPL::write_address(0x104); OPL::write_data(s_connection_select);
 
+  /*
   // Send Fnumber, Octave and Note On data.
   OPL::write_address(0xA0 + voice_offset + 0); OPL::write_data(m_channel_reg_A0[0]);
   OPL::write_address(0xA0 + voice_offset + 3); OPL::write_data(m_channel_reg_A0[2]);
@@ -151,7 +156,8 @@ void Voice::loadToOPL()
     OPL::write_address(0xB0 + voice_offset + 3); OPL::write_data(m_channel_reg_B0[1] & 0b11011111);
     OPL::write_address(0xB0 + voice_offset + 6); OPL::write_data(m_channel_reg_B0[2] & 0b11011111);
   }
+
   OPL::write_address(0xB0 + voice_offset + 0); OPL::write_data(m_channel_reg_B0[0]);
   OPL::write_address(0xB0 + voice_offset + 3); OPL::write_data(m_channel_reg_B0[1]);
-  OPL::write_address(0xB0 + voice_offset + 6); OPL::write_data(m_channel_reg_B0[2]);
+  OPL::write_address(0xB0 + voice_offset + 6); OPL::write_data(m_channel_reg_B0[2]);*/
 }

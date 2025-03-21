@@ -10,7 +10,7 @@ class InstrumentHandler {
 public:
   Instrument* instrument;
   uint8_t m_operator;
-  uint8_t m_channel;
+  uint8_t m_channel;  
 
 public:
   InstrumentHandler(Instrument& instrument);

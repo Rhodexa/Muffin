@@ -4,6 +4,14 @@
 #include <cstdint>
 
 typedef struct Instrument {
+  /* Shaper */
+  uint8_t shaper_type;
+
+  /* Wrangler */
+  uint8_t wrangler_type;
+  uint8_t wrangler_is_mono;
+
+
   /* Global */
   // Reg 0xBD [DAM, DVB, RYT, BD, SD, TOM, TC, HH] we only use the first two bits, though.
   uint8_t vibrato_tremolo_depth_flags; 

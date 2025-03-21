@@ -29,12 +29,12 @@ void InstrumentHandler::ch_setStereoSwitches(uint8_t value) { Toolbits::writeFie
 void InstrumentHandler::ch_setMultiplier(uint16_t value)    { instrument->multiplier[m_channel] = value; }
 
 // Globals
-void InstrumentHandler::setVibratoDepth(uint8_t value){
+void InstrumentHandler::global_setVibratoDepth(uint8_t value){
   instrument->vibrato_tremolo_depth_flags &= 0b10111111;
   instrument->vibrato_tremolo_depth_flags |= ((value & 1) << 6);
 }
 
-void InstrumentHandler::setTremoloDepth(uint8_t value){
+void InstrumentHandler::global_setTremoloDepth(uint8_t value){
   instrument->vibrato_tremolo_depth_flags &= 0b01111111;
   instrument->vibrato_tremolo_depth_flags |= ((value & 1) << 7);
 }
@@ -54,7 +54,7 @@ void InstrumentHandler::setTremoloDepth(uint8_t value){
 // 7 |        |       1 |      1 |        |       1 |
 //   |--------|---------|--------|--------|---------|
 /////////////////////////////////////////////////////////////////////////////
-void InstrumentHandler::setAlgorithm(uint8_t value) {
+void InstrumentHandler::voice_setAlgorithm(uint8_t value) {
   instrument->algorithm = value;
 
   // Because the channels also have their own CNT bit to set the rest on the configuratio we do that here
@@ -109,17 +109,18 @@ void InstrumentHandler::setAlgorithm(uint8_t value) {
 
 // Default instrument is a simple Sine Wave
 void InstrumentHandler::buildDefaultInstrument() {
+  voice_setAlgorithm(4); // Use 4OPFM mode with channels 0 and 1, channel 2 is in 2OPFM mode
   // First, we need to choose which of all 3 channels on this voice to edit.
-  setActiveChannel(0);  // On channel 0 (No 4OP available)
-
+  // We wanna hear a simple sine by default, this means editing OP4, that is Chan 1 Op 1
+  setActiveChannel(1);  // OP3 and OP4
     // Now let's edit this voice's operators
     setActiveOperator(1); // By default, channels of FM mode, so to hear something we need to edit its carrier (Operator 2)
       op_setAmplitude(0);      // Max. amplitude
       op_setAttack(15);        // -
       op_setDecay(6);          // - Set instantaneous reaction (Max attack and release)
-      op_setSustain(8);       // -
+      op_setSustain(8);        // -
       op_setRelease(15);       // -
-      op_setWaveform(6);
+      op_setWaveform(0);       // Sinewave (default anyway)
       // that's it. CHAN0 -> OP1 is set for sine wave.
     
   // Now onto the channel-specific configurations

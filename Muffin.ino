@@ -1,21 +1,16 @@
-/*
-
-*/
-
 #include <Arduino.h>
 #include <cstdint>
 #include <MIDI.h>
 #include "iobus.h"
 #include "codec.h"
+#include "display.h"
 #include "instrument.h"
 #include "instrument_handler.h"
 #include "voice_rack.h"
-#include "display.h"
+#include "wrangler.h"
 
 // Settings
-
-constexpr SERIAL_BAUD_RATE = 57600;
-
+constexpr int SERIAL_BAUD_RATE = 57600;
 
 //// MIDI
 struct CustomBaudRateSettings : public MIDI_NAMESPACE::DefaultSerialSettings {
@@ -29,7 +24,7 @@ MIDI_NAMESPACE::MidiInterface<MIDI_NAMESPACE::SerialMIDI<HardwareSerial, CustomB
 Instrument default_instrument;
 InstrumentHandler handler(default_instrument);
 
-NormalWrangler wrangler();
+NormalWrangler wrangler;
 
 
 
@@ -41,7 +36,8 @@ void midiHandleNoteOn(byte channel, byte note, byte velocity){
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void setup() {
+void setup()
+{
   pinMode(LED_BUILTIN, OUTPUT);
   
   // Initialize IO
@@ -74,11 +70,16 @@ void setup() {
   delay(500); digitalWrite(LED_BUILTIN, HIGH);
 }
 
-void loop() {
-  MIDI.read();
-  for (uint8_t i = 0; i < 6; i++){
-    voices[i].loadToOPL();
+
+auto current_millis = millis();
+auto last_frame = current_millis;
+void loop()
+{
+  current_millis = millis();
+  if(last_frame - 5 >= current_millis)
+  {
+    last_frame = current_millis;
+    MIDI.read();
   }
-  delay(5); // quick and dirty way to get ~100hz
 }
 

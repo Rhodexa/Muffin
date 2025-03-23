@@ -64,19 +64,19 @@ void InstrumentHandler::voice_setAlgorithm(uint8_t value) {
       instrument->channel_reg_C0[0] &= 0b11111110;
       instrument->channel_reg_C0[1] &= 0b11111110;
       instrument->channel_reg_C0[2] &= 0b11111110;
-      instrument->flags_is_last_in_chain = 0b00111000;
+      instrument->flags_is_last_in_chain = 0b00101010;
       break;
     case 1: // 2xFM + 1xADD
       instrument->channel_reg_C0[0] |= 0b00000001;
       instrument->channel_reg_C0[1] &= 0b11111110;
       instrument->channel_reg_C0[2] &= 0b11111110;
-      instrument->flags_is_last_in_chain = 0b00111001;
+      instrument->flags_is_last_in_chain = 0b00101011;
       break;
     case 2: // 1xFM + 2xADD
       instrument->channel_reg_C0[0] |= 0b00000001;
       instrument->channel_reg_C0[1] |= 0b00000001;
       instrument->channel_reg_C0[2] &= 0b11111110;
-      instrument->flags_is_last_in_chain = 0b00111011;
+      instrument->flags_is_last_in_chain = 0b00101111;
       break;
     case 3: // 3xADD
       instrument->channel_reg_C0[0] |= 0b00000001;
@@ -90,25 +90,25 @@ void InstrumentHandler::voice_setAlgorithm(uint8_t value) {
       instrument->channel_reg_C0[0] &= 0b11111110;
       instrument->channel_reg_C0[1] &= 0b11111110;
       instrument->channel_reg_C0[2] &= 0b11111110;
-      instrument->flags_is_last_in_chain = 0b00110000;
+      instrument->flags_is_last_in_chain = 0b00101000;
       break;
     case 5: // 1x4OPFM + 1x2OPADD 
       instrument->channel_reg_C0[0] &= 0b11111110;
       instrument->channel_reg_C0[1] &= 0b11111110;
       instrument->channel_reg_C0[2] |= 0b00000001;
-      instrument->flags_is_last_in_chain = 0b00110100;
+      instrument->flags_is_last_in_chain = 0b00111000;
       break;
     case 6: // 1x3OPFM + 1xOP + 1x2OPFM
       instrument->channel_reg_C0[0] |= 0b00000001;
       instrument->channel_reg_C0[1] &= 0b11111110;
       instrument->channel_reg_C0[2] &= 0b11111110;
-      instrument->flags_is_last_in_chain = 0b00110001;
+      instrument->flags_is_last_in_chain = 0b00101001;
       break;
     case 7: // 1x3OPFM + 1xOP + 1x2OPADD
       instrument->channel_reg_C0[0] |= 0b00000001;
       instrument->channel_reg_C0[1] &= 0b11111110;
       instrument->channel_reg_C0[2] |= 0b00000001;
-      instrument->flags_is_last_in_chain = 0b00110101;
+      instrument->flags_is_last_in_chain = 0b00111001;
       break;
   }
 }

@@ -56,6 +56,12 @@ Voice::Voice() : instrument(nullptr) {
 
 void Voice::setInstrument(Instrument& instrument) { this->instrument = &instrument; }
 
+void Voice::assingIndex(uint8_t index)
+{
+  m_self_index = index;
+  m_voice_base_address = (m_self_index < 4) ? m_self_index : (m_self_index + 0xFC);
+}
+
 bool Voice::isActive(){return check(FLAG_IS_ACTIVE);}
 
 void Voice::setPitch(uint32_t q16_pitch)
@@ -93,14 +99,14 @@ void Voice::setNoteOn(bool is_on)
     m_channel_reg_B0[1] &= ~(0x20);
     m_channel_reg_B0[2] &= ~(0x20);
   }
-  OPL::write_address(0xB0 + voice_offset + 0); OPL::write_data(m_channel_reg_B0[0]);
-  OPL::write_address(0xB0 + voice_offset + 3); OPL::write_data(m_channel_reg_B0[1]);
-  OPL::write_address(0xB0 + voice_offset + 6); OPL::write_data(m_channel_reg_B0[2]);
+  OPL::write_address(0xB0 + m_voice_base_address + 0); OPL::write_data(m_channel_reg_B0[0]);
+  OPL::write_address(0xB0 + m_voice_base_address + 3); OPL::write_data(m_channel_reg_B0[1]);
+  OPL::write_address(0xB0 + m_voice_base_address + 6); OPL::write_data(m_channel_reg_B0[2]);
 }
 
-void setVolume(uint8_t volume)
+void Voice::setVolume(uint8_t volume)
 {
-  m_global_volume = volume;
+  m_volume_scale = (volume >> 2) + 1;
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -109,38 +115,42 @@ void setVolume(uint8_t volume)
  * Load the instrument data into the voice.
  */
 void Voice::loadToOPL()
-{
+{  
   // Iterate through all 3 channels in the voice
-  uint16_t voice_offset = (m_index < 4) ? m_index : (m_index + 0xFC);
   for (uint8_t ch = 0; ch < 3; ch++)
   {
-    uint16_t offset = voice_offset + ch*8;
+    uint16_t op_base = m_voice_base_address + ch*8;
     for(uint8_t op = 0; op < 2; op++)
     {
-      OPL::write_address(0x20 + offset); OPL::write_data(instrument->operator_reg_20[ch][op]); // AM | VIB | EGT | KSR | MULT
+      OPL::write_address(0x20 + op_base); OPL::write_data(instrument->operator_reg_20[ch][op]); // AM | VIB | EGT | KSR | MULT
 
       // If this op is last in the chain of the current algorithm, 
-      // let's overwrite its Total Level value with the global volume value.
+      // let's scale its volume with velocity. (Perhaps we can scale every thing with velocity based on another table, to allow for modulation!)
+      // we could allow enabling scaling for each operator
+      // or have different scalings for each.
       uint8_t reg_40_reformat = instrument->operator_reg_40[ch][op];
-      if (is_last_in_chain[instrument->algorithm] & (1 >> (ch + offset)))
-        reg_40_reformat = (reg_40_reformat & 0xC0) | m_volume;
+      uint8_t total_level = reg_40_reformat & 0x3F;
+      if (instrument->flags_is_last_in_chain & (0b00100000 >> (ch*2 + op)))
+        total_level = ( (total_level << 7) * m_volume_scale ) >> 7;
+      reg_40_reformat &= 0xC0;
+      reg_40_reformat |= (0x3F - total_level) & 0x3F;
 
-      OPL::write_address(0x40 + offset); OPL::write_data(reg_40_reformat);                     // KSL     | Total Level
-      OPL::write_address(0x60 + offset); OPL::write_data(instrument->operator_reg_60[ch][op]); // ATTACK  | DECAY
-      OPL::write_address(0x80 + offset); OPL::write_data(instrument->operator_reg_80[ch][op]); // SUSTAIN | RELEASE
-      OPL::write_address(0xE0 + offset); OPL::write_data(instrument->operator_reg_E0[ch][op]); // Waveform
-      offset += 3;
+      OPL::write_address(0x40 + op_base); OPL::write_data(reg_40_reformat);                     // KSL     | Total Level
+      OPL::write_address(0x60 + op_base); OPL::write_data(instrument->operator_reg_60[ch][op]); // ATTACK  | DECAY
+      OPL::write_address(0x80 + op_base); OPL::write_data(instrument->operator_reg_80[ch][op]); // SUSTAIN | RELEASE
+      OPL::write_address(0xE0 + op_base); OPL::write_data(instrument->operator_reg_E0[ch][op]); // Waveform
+      op_base += 3;
     }  
   }
 
   // Stereo and CNT1
-  OPL::write_address(0xC0 + voice_offset + 0); OPL::write_data(instrument->channel_reg_C0[0]); 
-  OPL::write_address(0xC0 + voice_offset + 3); OPL::write_data(instrument->channel_reg_C0[1]);
-  OPL::write_address(0xC0 + voice_offset + 6); OPL::write_data(instrument->channel_reg_C0[2]);
+  OPL::write_address(0xC0 + m_voice_base_address + 0); OPL::write_data(instrument->channel_reg_C0[0]); 
+  OPL::write_address(0xC0 + m_voice_base_address + 3); OPL::write_data(instrument->channel_reg_C0[1]);
+  OPL::write_address(0xC0 + m_voice_base_address + 6); OPL::write_data(instrument->channel_reg_C0[2]);
 
   // build register 0x104 (CONNECTION_SEL). (because its shared! ugh! lol)
   // algorithms 4, 5, 6 and 7 has 4OP mode enabled
-  if (instrument->algorithm < 4) s_connection_select &= ~(1 << m_index);
-  else                           s_connection_select |=  (1 << m_index);
+  if (instrument->algorithm < 4) s_connection_select &= ~(1 << m_self_index);
+  else                           s_connection_select |=  (1 << m_self_index);
   OPL::write_address(0x104); OPL::write_data(s_connection_select);
 }

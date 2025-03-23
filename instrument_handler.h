@@ -17,6 +17,7 @@ public:
   void setActiveOperator(uint8_t op);
   void setActiveChannel (uint8_t ch);
   void setActiveInstrument(Instrument& inst);
+  void buildDefaultInstrument();
 
 public:
   // Operators
@@ -38,12 +39,9 @@ public:
   void ch_setMultiplier(uint16_t value);  
 
   // Instrument Globals
-  void setAlgorithm(uint8_t value);
-  void setVibratoDepth(uint8_t value);
-  void setTremoloDepth(uint8_t value);
-
-  // Utils
-  void buildDefaultInstrument();
+  void voice_setAlgorithm(uint8_t value);
+  void global_setVibratoDepth(uint8_t value);
+  void global_setTremoloDepth(uint8_t value);
 };
 
 

@@ -35,6 +35,7 @@ typedef struct Instrument {
     uint8_t operator_reg_60[3][2]; // 0x060 base [AR, DR]
     uint8_t operator_reg_80[3][2]; // 0x080 base [SL, RR]
     uint8_t operator_reg_E0[3][2]; // 0x0E0 base [WS]
+    // uint8_t velocity_amplitude_scale[3][2]; // experimental
 
   /* Channel */
     uint16_t multiplier[3];    // Literal frequency multiplier in Fixed Point 8.8 format

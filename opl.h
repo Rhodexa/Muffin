@@ -10,8 +10,13 @@
 #include "iobus.h"
 
 namespace OPL {
+  void write_address(uint16_t address);
+  void write_data(uint8_t data);
   void write(uint16_t address, uint8_t data);
-  uint8_t read();
+
+  // The read() function was included mostly for hardware testing,
+  // but it ain't actually used at all...
+  uint8_t read(); 
 }
 
 

@@ -6,14 +6,13 @@ namespace Codec {
 
     IO::setAddress(0);
     IO::setData(address);
-    IO::setMode(1);
+    IO::setModeOutput();
     IO::strobeWrite();
 
     delayMicroseconds(3);
 
     IO::setAddress(1);
     IO::setData(data);
-    IO::setMode(1);
     IO::strobeWrite();
 
     IO::setChipSelect(IO::Chips::NONE);
@@ -24,11 +23,11 @@ namespace Codec {
 
     IO::setAddress(0);
     IO::setData(address);
-    IO::setMode(1);
+    IO::setModeOutput();
     IO::strobeWrite();
 
     delayMicroseconds(3);
-    IO::setMode(0);
+    IO::setModeInput();
 
     IO::setAddress(1);
     IO::beginRead();

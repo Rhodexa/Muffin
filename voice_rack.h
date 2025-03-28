@@ -9,7 +9,7 @@ namespace VoiceRack
 {
   // A weird way to create a global variable
   inline Voice voice[6];
-  void init(Instrument& instrument);
+  void init(Instrument &instrument);
 }
 
 #endif

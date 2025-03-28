@@ -13,10 +13,10 @@ public:
   uint8_t m_channel;  
 
 public:
-  InstrumentHandler(Instrument& instrument);
+  InstrumentHandler(Instrument &inst);
   void setActiveOperator(uint8_t op);
   void setActiveChannel (uint8_t ch);
-  void setActiveInstrument(Instrument& inst);
+  void setActiveInstrument(Instrument &inst);
   void buildDefaultInstrument();
 
 public:

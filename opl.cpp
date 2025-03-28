@@ -6,25 +6,37 @@ namespace OPL {
 
   // OPL3 has two "banks" which can be selected using bus bit A1. To select bank 1 we add $100 to the address
   // This function will then decode that as A1 = 1 and Data = $1xx & $FF
-  void write_address(uint16_t address){
+  /*void write_address(uint16_t address){
     IO::setChipSelect(IO::Chips::OPL);
     if ( address > 0xFF ) IO::setAddress(0b10);
     else IO::setAddress(0b00);
     IO::setData(address & 0xFF);
-    IO::setMode(1);
+    IO::setModeOutput();
     IO::strobeWrite();
-    delayMicroseconds(1);
+    delayMicroseconds(3); 
     IO::setChipSelect(IO::Chips::NONE);
+    delayMicroseconds(3);
   }
 
   void write_data(uint8_t data){
     IO::setChipSelect(IO::Chips::OPL);
     IO::setAddress(0b01);
     IO::setData(data);
-    IO::setMode(1);
+    IO::setModeOutput();
     IO::strobeWrite();
-    delayMicroseconds(1);
+    delayMicroseconds(3);
     IO::setChipSelect(IO::Chips::NONE);
+    delayMicroseconds(3);
+  }*/
+
+
+  uint16_t tempaddr = 0;
+  void write_address(uint16_t address){
+    tempaddr = address;
+  }
+
+  void write_data(uint8_t data){
+    write(tempaddr, data);
   }
 
   // Write Address and Data in one go. (Blocks code for ~4us)
@@ -34,21 +46,21 @@ namespace OPL {
     if ( address > 0xFF ) IO::setAddress(0b10);
     else IO::setAddress(0b00);
     IO::setData(address);
-    IO::setMode(1);
+    IO::setModeOutput();
     IO::strobeWrite();
 
     delayMicroseconds(3);
 
     IO::setAddress(0b01);
     IO::setData(data);
-    IO::setMode(1);
     IO::strobeWrite();
 
     IO::setChipSelect(IO::Chips::NONE);
+    delayMicroseconds(3);
   }
 
   uint8_t read(){
-    IO::setMode(0);
+    IO::setModeInput();
     IO::setChipSelect(IO::Chips::OPL);
     IO::setAddress(0);
     IO::beginRead();

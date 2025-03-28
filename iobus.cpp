@@ -6,6 +6,10 @@ namespace IO {
     __asm("NOP"); __asm("NOP"); __asm("NOP"); __asm("NOP");
     __asm("NOP"); __asm("NOP"); __asm("NOP"); __asm("NOP");
     __asm("NOP"); __asm("NOP"); __asm("NOP"); __asm("NOP");
+    __asm("NOP"); __asm("NOP"); __asm("NOP"); __asm("NOP");
+    __asm("NOP"); __asm("NOP"); __asm("NOP"); __asm("NOP");
+    __asm("NOP"); __asm("NOP"); __asm("NOP"); __asm("NOP");
+    __asm("NOP"); __asm("NOP"); __asm("NOP"); __asm("NOP");
   }
 
   void beginRead(){
@@ -17,25 +21,26 @@ namespace IO {
     digitalWrite(IO_PIN_RD, 0);
   }
 
-  void setMode(bool mode) {
-    if(mode){ // Out
-      endRead(); // Make sure no one is talking
-      GPIOB->CRH = 0x11111111;
-    }
-    else{ // In
-      GPIOB->CRH = 0x44444444;
-    }
+  void setModeOutput() {
+    endRead(); // Make sure no one is talking
+    GPIOB->CRH = 0x11111111;
+    shortDelay();
+  }
+
+  void setModeInput(){
+    GPIOB->CRH = 0x44444444;
     shortDelay();
   }
 
   void init() {
     pinMode(IO_PIN_RESET, OUTPUT);
     digitalWrite(IO_PIN_RESET, LOW); // Redundant... but just in case!
+
     // enable Port B's clock
     RCC->APB2ENR |= RCC_APB2ENR_IOPBEN;
-
+    
     // Init the 8-bit Data bus
-    setMode(0);
+    setModeInput();
 
     // init Address ports [A0, A1] -> PB0, PB1
     // and the chip select control too [CS0, CS1] -> PB6, PB7
@@ -66,15 +71,15 @@ namespace IO {
 
   // Other stuff:
   void setAddress(uint8_t addr){
-    uint16_t odr = GPIOB->ODR & ~(0x03);
-    odr |= addr & 0x03;
+    uint16_t odr = GPIOB->ODR & ~(0b00000011);
+    odr |= addr & 0b00000011;
     GPIOB->ODR = odr;
   }
 
   void setChipSelect(uint8_t chip){
     endRead(); // Make sure no one is talking
-    uint16_t odr = GPIOB->ODR & ~(0xC0);
-    odr |= (chip << 6) & 0xC0;
+    uint16_t odr = GPIOB->ODR & ~(0b11000000);
+    odr |= (chip << 6) & 0x11000000;
     GPIOB->ODR = odr;
   }
 

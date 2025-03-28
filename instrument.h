@@ -3,13 +3,22 @@
 
 #include <cstdint>
 
-typedef struct Instrument {
-  /* Shaper */
-    uint8_t shaper_type;
+typedef struct Operator {
+  uint8_t reg_20; // 0x020 base [Tremolo, Vibrato, Sustain, KSR, Frequency Multiplier]
+  uint8_t reg_40; // 0x040 base [KSL, TL]
+  uint8_t reg_60; // 0x060 base [AR, DR]
+  uint8_t reg_80; // 0x080 base [SL, RR]
+  uint8_t reg_E0; // 0x0E0 base [WS]
+} Operator;
 
-  /* Wrangler */
-    uint8_t wrangler_type;
-    uint8_t wrangler_is_mono;
+typedef struct Channel {
+  Operator op[2];
+  uint8_t reg_C0;       // Stereo Switches, OP1 Feedback and Connection Type (FM/Additive)
+  uint16_t multiplier; // Fractional Frequency Multiplier
+} Channel;
+
+typedef struct Instrument {
+  Channel chan[3];
 
   /* Global */
     // The algorithm is actually a combination of connection_select (Reg 0x104) and the channels' CNT (Reg 0xC0) bits.
@@ -27,19 +36,6 @@ typedef struct Instrument {
   
     // Reg 0x008 [-, NTS, -] I... dont't really know what this does. I belive it scales the ADSR differently.
     uint8_t note_type_select; 
-
-  /* Operator */
-    //               [channel][operator]
-    uint8_t operator_reg_20[3][2]; // 0x020 base [Tremolo, Vibrato, Sustain, KSR, Frequency Multiplier]
-    uint8_t operator_reg_40[3][2]; // 0x040 base [KSL, TL]
-    uint8_t operator_reg_60[3][2]; // 0x060 base [AR, DR]
-    uint8_t operator_reg_80[3][2]; // 0x080 base [SL, RR]
-    uint8_t operator_reg_E0[3][2]; // 0x0E0 base [WS]
-    // uint8_t velocity_amplitude_scale[3][2]; // experimental
-
-  /* Channel */
-    uint16_t multiplier[3];    // Literal frequency multiplier in Fixed Point 8.8 format
-    uint8_t channel_reg_C0[3]; // Reg 0x0C0 [Stereo Switches, Feedback, Connection Type]
-};
+} Instrument;
 
 #endif

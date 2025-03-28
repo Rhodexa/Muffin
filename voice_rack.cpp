@@ -2,7 +2,7 @@
 
 namespace VoiceRack
 {
-  void init(Instrument& instrument)
+  void init(Instrument &instrument)
   {
     // Enable OPL3 Features
     OPL::write(0x105, 1); 

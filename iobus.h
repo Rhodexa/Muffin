@@ -33,7 +33,8 @@ namespace IO {
 
   void beginRead();
   void endRead();
-  void setMode(bool mode);
+  void setModeOutput();
+  void setModeInput();
 
   void init();
 

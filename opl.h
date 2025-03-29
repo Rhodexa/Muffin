@@ -10,6 +10,8 @@
 #include "iobus.h"
 
 namespace OPL {
+  void test();
+
   void write_address(uint16_t address);
   void write_data(uint8_t data);
   void write(uint16_t address, uint8_t data);

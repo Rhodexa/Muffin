@@ -133,7 +133,7 @@ void Voice::loadToOPL()
       reg_40_reformat &= 0xC0;
       reg_40_reformat |= (0x3F - total_level) & 0x3F;*/
 
-      OPL::write_address(op_base + 0x20); OPL::write_data(instrument->chan[ch].op[op].reg_20); // AM | VIB | EGT | KSR | MULT
+      OPL::write_address(op_base + 0x20); OPL::write_data(instrument->chan[ch].op[op].reg_20 | 0x20); // AM | VIB | EGT(always set) | KSR | MULT
       OPL::write_address(op_base + 0x40); OPL::write_data(instrument->chan[ch].op[op].reg_40); // KSL     | Total Level
       OPL::write_address(op_base + 0x60); OPL::write_data(instrument->chan[ch].op[op].reg_60); // ATTACK  | DECAY
       OPL::write_address(op_base + 0x80); OPL::write_data(instrument->chan[ch].op[op].reg_80); // SUSTAIN | RELEASE

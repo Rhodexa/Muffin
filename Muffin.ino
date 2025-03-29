@@ -30,10 +30,6 @@ NormalWrangler wrangler;
 void midiHandleNoteOn(byte channel, byte note, byte velocity){
   digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));
   wrangler.handleNoteOn(note);
-  for(int i = 0; i < 6; i++)
-  {
-    VoiceRack::voice[i].loadToOPL();
-  }
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -45,42 +41,37 @@ void setup()
   // Initialize IO
   Serial.begin(SERIAL_BAUD_RATE);
 
-  delay(1000);
   
   IO::init();
-  IO::setModeInput();
   //SPI.begin();
 
   // Initializing IO Bus will cause a reset pulse on the Reset line. Let's wait here for a bit 'till everything starts up 
   // This should probably just take less than 100ms... but hey... a bit extra doesn't hurt!
-  delay(500);
+  delay(1000);
 
   // Init display, will show the logo
   // Allows us to already start printing information
-  //Display::init();   
+  // Display::init();   
 
-  // Prepare CODEC
+  // Prepare CODEC  
   Codec::write(Codec::Registers::OPL_LEFT,  0); // Enable left  sound output
   Codec::write(Codec::Registers::OPL_RIGHT, 0); // Enable right sound output
 
   // Make sure voices have a proper pointer to an instrument
   // This also initializes the OPL3 chip.
-  //VoiceRack::init(default_instrument);
-  OPL::write(0x20, 0xF0);
-  OPL::write(0x40, 0xF0);
-  OPL::write(0x60, 0xF0);
-  OPL::write(0x80, 0x70);
-  OPL::write(0xA0, 0b11101000);
-  OPL::write(0xB0, 0x35);
-  OPL::write(0xC0, 0xFF);
+  // OPL::test();
+  VoiceRack::init(default_instrument);
 
   // Initialize MIDI
-  //MIDI.begin(MIDI_CHANNEL_OMNI);
-  //MIDI.setHandleNoteOn(midiHandleNoteOn);
+  MIDI.begin(MIDI_CHANNEL_OMNI);
+  MIDI.setHandleNoteOn(midiHandleNoteOn);
 
   delay(500); digitalWrite(LED_BUILTIN, HIGH);
 
-  
+  for(int i = 0; i < 6; i++)
+  {
+    VoiceRack::voice[i].loadToOPL();
+  }  
 }
 
 
@@ -92,7 +83,7 @@ void loop()
   if(last_frame - current_millis >= 5)
   {
     last_frame = current_millis;*/
-    //MIDI.read();
+    MIDI.read();
   //}
 }
 

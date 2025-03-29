@@ -117,7 +117,7 @@ void InstrumentHandler::voice_setAlgorithm(uint8_t value) {
 
 // Default instrument is a simple Sine Wave
 void InstrumentHandler::buildDefaultInstrument() {
-  voice_setAlgorithm(3); // 6OP Additive (No FM ensures _something_ is gonna sound)
+  voice_setAlgorithm(0); // 6OP Additive (No FM ensures _something_ is gonna sound)
 
   setActiveChannel(0);   // 1.OP1 and 1.OP2
     // Let's edit this channel's settings
@@ -127,7 +127,15 @@ void InstrumentHandler::buildDefaultInstrument() {
       setActiveOperator(0); // OP1
         op_setAmplitude(0); // Max. amplitude
         op_setAttack(15);   // Instant Reaction
-        op_setDecay(0);     // No decay
+        op_setDecay(6);     // No decay
+        op_setSustain(15);  // Doesn't really make an effect with 0 decay
+        op_setRelease(7);   // Instant stop
+        op_setWaveform(1);  // Sinewave (default anyway)
+      //
+      setActiveOperator(1); // OP1
+        op_setAmplitude(0); // Max. amplitude
+        op_setAttack(15);   // Instant Reaction
+        op_setDecay(6);     // No decay
         op_setSustain(15);  // Doesn't really make an effect with 0 decay
         op_setRelease(7);   // Instant stop
         op_setWaveform(0);  // Sinewave (default anyway)

@@ -32,6 +32,11 @@ void midiHandleNoteOn(byte channel, byte note, byte velocity){
   wrangler.handleNoteOn(note);
 }
 
+void midiHandleNoteOff(byte channel, byte note, byte velocity){
+  digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));
+  wrangler.handleNoteOff(note);
+}
+
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void setup()
@@ -54,8 +59,8 @@ void setup()
   // Display::init();   
 
   // Prepare CODEC  
-  Codec::write(Codec::Registers::OPL_LEFT,  0); // Enable left  sound output
-  Codec::write(Codec::Registers::OPL_RIGHT, 0); // Enable right sound output
+  Codec::write(Codec::Registers::OPL_LEFT,  3); // Enable left  sound output
+  Codec::write(Codec::Registers::OPL_RIGHT, 3); // Enable right sound output
 
   // Make sure voices have a proper pointer to an instrument
   // This also initializes the OPL3 chip.
@@ -65,6 +70,7 @@ void setup()
   // Initialize MIDI
   MIDI.begin(MIDI_CHANNEL_OMNI);
   MIDI.setHandleNoteOn(midiHandleNoteOn);
+  MIDI.setHandleNoteOff(midiHandleNoteOff);
 
   delay(500); digitalWrite(LED_BUILTIN, HIGH);
 
@@ -84,6 +90,7 @@ void loop()
   {
     last_frame = current_millis;*/
     MIDI.read();
+    wrangler.update();
   //}
 }
 

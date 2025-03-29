@@ -29,8 +29,7 @@ namespace IO {
   constexpr uint8_t IO_PIN_WR = PA12;
   constexpr uint8_t IO_PIN_RESET = PA4;
   // yeaah...
-  void shortDelay(void);
-
+  
   void beginRead();
   void endRead();
   void setModeOutput();

@@ -7,7 +7,7 @@ uint16_t Voice::encodeFrequency(uint32_t frequency)
   uint8_t leading_zeroes = __builtin_clz(frequency) - 15;
   uint8_t exponent = (leading_zeroes > 7) ? 0 : (7 - leading_zeroes);
   uint16_t mantissa = frequency >> exponent;
-  return (exponent << 10) | mantissa;
+  return ((exponent << 10) | mantissa) & 0x1FFF;
 }
 
 // Converts MIDI pitch values in Q16.16 format into frequency values
@@ -39,10 +39,9 @@ uint8_t Voice::s_connection_select = 0;
 
 Voice::Voice() : instrument(nullptr)
 {
-  for (uint8_t i = 0; i < 3; i++)
+  for (uint8_t ch = 0; ch < 3; ch++)
   {
-    m_chan[i].reg_A0 = 0;
-    m_chan[i].reg_B0 = 0;
+    m_chan_reg_B0[ch] = 0;
   }
 }
 
@@ -68,37 +67,36 @@ void Voice::setVolume(uint8_t volume)
 void Voice::setPitch(uint32_t q16_pitch)
 {
   uint32_t frequency = pitchToFrequency(q16_pitch);
-  for(uint8_t i = 0; i < 3; i++)
+  for(uint8_t ch = 0; ch < 3; ch++)
   {
-    uint16_t frequencyEncoded = encodeFrequency((frequency * instrument->chan[i].multiplier) >> 12);
-    m_chan[i].reg_A0 = frequencyEncoded & 0xFF;
-    m_chan[i].reg_B0 &= 0xE0;
-    m_chan[i].reg_B0 |= (frequencyEncoded >> 8) & 0x1F;
-  }
-
-  for(uint8_t i = 0; i < 3; i++)
-  {
-    OPL::write((m_voice_base_address + i*3 + 0xA0), (instrument->chan[i].reg_A0));
-    OPL::write((m_voice_base_address + i*3 + 0xB0), (instrument->chan[i].reg_B0));
+    uint16_t frequencyEncoded = encodeFrequency((frequency * instrument->chan[ch].multiplier) >> 12);
+    OPL::write((m_voice_base_address + ch*3 + 0xA0), (frequencyEncoded & 0xFF));
+    m_chan_reg_B0[ch] &= ~(0x1F);
+    m_chan_reg_B0[ch] |= (frequencyEncoded >> 8);
+    OPL::write((m_voice_base_address + ch*3 + 0xB0), m_chan_reg_B0[ch]);
   }
 }
 
 void Voice::sendNoteOn()
 {
-  for(uint8_t i = 0; i < 3; i++)
+  for(uint8_t ch = 0; ch < 3; ch++)
   {
-    m_chan[i].reg_B0 |= 0x20;
-    OPL::write((m_voice_base_address + i*3 + 0xB0), (instrument->chan[i].reg_B0 & ~(0x20)); // Set note-off first, to re-trigger the note
-    OPL::write((m_voice_base_address + i*3 + 0xB0), (instrument->chan[i].reg_B0));      
+    m_chan_reg_B0[ch] |= 0x20;
+    OPL::write((m_voice_base_address + ch*3 + 0xB0), (m_chan_reg_B0[ch] & ~(0x20))); // Set note-off first, to re-trigger the note (For whatever reason this requieres a delay!)
+  }
+  
+  for(uint8_t ch = 0; ch < 3; ch++)
+  {
+    OPL::write((m_voice_base_address + ch*3 + 0xB0), (m_chan_reg_B0[ch]));      
   }
 }
 
 void Voice::sendNoteOff()
 {
-  for(uint8_t i = 0; i < 3; i++)
+  for(uint8_t ch = 0; ch < 3; ch++)
   {
-    m_chan[i].reg_B0 &= ~(0x20);
-    OPL::write((m_voice_base_address + i*3 + 0xB0), (instrument->chan[i].reg_B0));
+    m_chan_reg_B0[ch] &= ~(0x20);
+    OPL::write((m_voice_base_address + ch*3 + 0xB0), (m_chan_reg_B0[ch]));
   }
 }
 
@@ -120,9 +118,9 @@ void Voice::loadToOPL()
       OPL::write((op_base + 0x60), (instrument->chan[ch].op[op].reg_60));        // ATTACK  | DECAY
       OPL::write((op_base + 0x80), (instrument->chan[ch].op[op].reg_80));        // SUSTAIN | RELEASE
       OPL::write((op_base + 0xE0), (instrument->chan[ch].op[op].reg_E0));        // Waveform      
-      OPL::write((m_voice_base_address + ch*3 + 0xC0), (instrument->chan[ch].reg_C0)); // Stereo and CNT1
       op_base += 3; // OP2 is always 3 addresses away from OP1
     }
+    OPL::write((m_voice_base_address + ch*3 + 0xC0), (instrument->chan[ch].reg_C0)); // Stereo and CNT1
     op_base += 2; // Next channel's OP1 is 8 addresses away from Prev chan's OP1
   }
 

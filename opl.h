@@ -16,8 +16,7 @@ namespace OPL {
   void write_data(uint8_t data);
   void write(uint16_t address, uint8_t data);
 
-  // The read() function was included mostly for hardware testing,
-  // but it ain't actually used at all...
+  // The read() function was included mostly for hardware testing
   uint8_t read(); 
 }
 

@@ -22,12 +22,15 @@ private:
   uint8_t m_current_voice = 0;
 
 public:
-  uint8_t held_key[6] = {0, 0, 0, 0, 0, 0};
+  int8_t held_key[6] = {0, 0, 0, 0, 0, 0};
+  int32_t pitch_target[6];
+  int32_t pitch_current[6];
 
 public:
   NormalWrangler();
   void handleNoteOn(uint8_t pitch);
   void handleNoteOff(uint8_t pitch);
+  void update();
 };
 
 #endif

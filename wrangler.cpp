@@ -12,8 +12,7 @@ void NormalWrangler::handleNoteOn(uint8_t pitch)
   }
   held_key[m_current_voice] = pitch;
   VoiceRack::voice[m_current_voice].setPitch(pitch << 16);
-  VoiceRack::voice[m_current_voice].setNoteOn(false);
-  VoiceRack::voice[m_current_voice].setNoteOn(true);
+  VoiceRack::voice[m_current_voice].sendNoteOn();
   //handler.op_setWaveform(m_current_voice);
 }
 
@@ -23,7 +22,7 @@ void NormalWrangler::handleNoteOff(uint8_t pitch){
     if (held_key[i] == pitch)
     {
       held_key[i] = 0;
-      VoiceRack::voice[i].setNoteOn(false);
+      VoiceRack::voice[i].sendNoteOff();
     }
   }
 }

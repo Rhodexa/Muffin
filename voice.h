@@ -39,7 +39,8 @@ public:
   void setInstrument(Instrument &inst);
   void setPitch(uint32_t q16_pitch);
   void setVolume(uint8_t volume);
-  void setNoteOn(bool is_on);
+  void sendNoteOn();
+  void sendNoteOff();
   bool isActive();
   void loadToOPL();
 };

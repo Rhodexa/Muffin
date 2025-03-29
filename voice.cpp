@@ -16,7 +16,7 @@ uint16_t Voice::encodeFrequency(uint32_t frequency)
 uint32_t Voice::pitchToFrequency(uint32_t q16_pitch)
 {
   // Split the Q16.16 pitch number into its Integer and Fractional components
-  uint32_t pitch_integer_component = (q16_pitch >> 16);
+  uint32_t pitch_integer_component = (q16_pitch >> 16) + 6; // +6 corrects for MIDI. This fuction begins at F#, but MIDI starts at C
 
   if (pitch_integer_component < 114) // Pitch 114
   {
@@ -63,7 +63,7 @@ void Voice::setVolume(uint8_t volume)
 void Voice::setPitch(uint32_t q16_pitch)
 {
   uint32_t frequency = pitchToFrequency(q16_pitch);
-  uint16_t
+  uint16_t 
   frequencyEncoded = encodeFrequency((frequency * instrument->chan[0].multiplier) >> 12);
   m_chan[0].reg_A0 = frequencyEncoded & 0xFF;
   m_chan[0].reg_B0 &= 0xE0;
@@ -80,10 +80,10 @@ void Voice::setPitch(uint32_t q16_pitch)
   m_chan[2].reg_B0 |= (frequencyEncoded >> 8) & 0x1F;
 
   OPL::write_address(m_voice_base_address + 0 + 0xA0); OPL::write_data(m_chan[0].reg_A0);
-  OPL::write_address(m_voice_base_address + 3 + 0xB0); OPL::write_data(m_chan[0].reg_B0);
-  OPL::write_address(m_voice_base_address + 6 + 0xA0); OPL::write_data(m_chan[1].reg_A0);
-  OPL::write_address(m_voice_base_address + 0 + 0xB0); OPL::write_data(m_chan[1].reg_B0);
-  OPL::write_address(m_voice_base_address + 3 + 0xA0); OPL::write_data(m_chan[2].reg_A0);
+  OPL::write_address(m_voice_base_address + 0 + 0xB0); OPL::write_data(m_chan[0].reg_B0);
+  OPL::write_address(m_voice_base_address + 3 + 0xA0); OPL::write_data(m_chan[1].reg_A0);
+  OPL::write_address(m_voice_base_address + 3 + 0xB0); OPL::write_data(m_chan[1].reg_B0);
+  OPL::write_address(m_voice_base_address + 6 + 0xA0); OPL::write_data(m_chan[2].reg_A0);
   OPL::write_address(m_voice_base_address + 6 + 0xB0); OPL::write_data(m_chan[2].reg_B0);
 }
 
@@ -140,7 +140,8 @@ void Voice::loadToOPL()
       OPL::write_address(op_base + 0xE0); OPL::write_data(instrument->chan[ch].op[op].reg_E0); // Waveform
       op_base += 3; // OP2 is always 3 addresses away from OP1
     }
-    op_base += 5; // Next channel's OP1
+    // op_base now equals 6
+    op_base += 2; // Next channel's OP1 is 8 addresses away from Prev chan's OP1
   }
 
   // Stereo and CNT1

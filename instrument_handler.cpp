@@ -24,8 +24,8 @@ void InstrumentHandler::op_setRelease(uint8_t value)        { Toolbits::writeFie
 void InstrumentHandler::op_setWaveform(uint8_t value)       { Toolbits::writeField(instrument->chan[m_channel].op[m_operator].reg_E0, 0b00000111, 0, value); }
 
 // Channels
-void InstrumentHandler::ch_setFeedback(uint8_t value)       { Toolbits::writeField(instrument->chan[m_channel].reg_C0, 0x0E, 1, value); }
-void InstrumentHandler::ch_setStereoSwitches(uint8_t value) { Toolbits::writeField(instrument->chan[m_channel].reg_C0, 0x30, 4, value); }
+void InstrumentHandler::ch_setFeedback(uint8_t value)       { Toolbits::writeField(instrument->chan[m_channel].reg_C0, 0b00001110, 1, value); }
+void InstrumentHandler::ch_setStereoSwitches(uint8_t value) { Toolbits::writeField(instrument->chan[m_channel].reg_C0, 0b00110000, 4, value); }
 void InstrumentHandler::ch_setMultiplier(uint16_t value)    { instrument->chan[m_channel].multiplier = value; }
 
 // Globals
@@ -56,7 +56,6 @@ void InstrumentHandler::global_setTremoloDepth(uint8_t value){
 /////////////////////////////////////////////////////////////////////////////
 void InstrumentHandler::voice_setAlgorithm(uint8_t value) {
   instrument->algorithm = value;
-
   // Because the channels also have their own CNT bit to set the rest on the configuration we do that here
   switch (value){
     /* Modes using 2OP only */
@@ -115,31 +114,45 @@ void InstrumentHandler::voice_setAlgorithm(uint8_t value) {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-// Default instrument is a simple Sine Wave
 void InstrumentHandler::buildDefaultInstrument() {
   voice_setAlgorithm(0); // 6OP Additive (No FM ensures _something_ is gonna sound)
 
   setActiveChannel(0);   // 1.OP1 and 1.OP2
-    // Let's edit this channel's settings
-    ch_setStereoSwitches(0b11); // Enable sound output on Left and Right
+    ch_setStereoSwitches(0b01); // Enable sound output on Left and Right
     ch_setMultiplier(1 << 12);  // No frequency scaling
-      // Now let's edit this voice's operators
       setActiveOperator(0); // OP1
-        op_setAmplitude(0); // Max. amplitude
+        op_setAmplitude(64/2); // Max. amplitude
         op_setAttack(15);   // Instant Reaction
-        op_setDecay(6);     // No decay
-        op_setSustain(15);  // Doesn't really make an effect with 0 decay
-        op_setRelease(7);   // Instant stop
-        op_setWaveform(1);  // Sinewave (default anyway)
-      //
-      setActiveOperator(1); // OP1
-        op_setAmplitude(0); // Max. amplitude
-        op_setAttack(15);   // Instant Reaction
-        op_setDecay(6);     // No decay
+        op_setDecay(5);     // No decay
         op_setSustain(15);  // Doesn't really make an effect with 0 decay
         op_setRelease(7);   // Instant stop
         op_setWaveform(0);  // Sinewave (default anyway)
-      //
-    //
-  //
+
+      setActiveOperator(1); // OP1
+        op_setMultiplier(1);
+        op_setAmplitude(0); // Max. amplitude
+        op_setAttack(15);   // Instant Reaction
+        op_setDecay(4);     // No decay
+        op_setSustain(15);  // Doesn't really make an effect with 0 decay
+        op_setRelease(7);   // Instant stop
+        op_setWaveform(0);  // Sinewave (default anyway)
+
+  setActiveChannel(1);  
+    ch_setStereoSwitches(0b10); 
+    ch_setMultiplier((1 << 12) + 50); 
+      setActiveOperator(0);
+        op_setAmplitude(64/2);
+        op_setAttack(15);   
+        op_setDecay(4);     
+        op_setSustain(15); 
+        op_setRelease(7);   
+        op_setWaveform(0);  
+
+      setActiveOperator(1);
+        op_setAmplitude(0); 
+        op_setAttack(15);   
+        op_setDecay(3);     
+        op_setSustain(15);  
+        op_setRelease(7);   
+        op_setWaveform(0);
 }

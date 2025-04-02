@@ -22,7 +22,7 @@ private:
   uint8_t m_current_voice = 0;
 
 public:
-  int8_t held_key[6] = {0, 0, 0, 0, 0, 0};
+  int8_t held_key[6] = {-1, -1, -1, -1, -1, -1};
   int32_t pitch_target[6];
   int32_t pitch_current[6];
 

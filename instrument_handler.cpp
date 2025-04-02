@@ -116,16 +116,16 @@ void InstrumentHandler::voice_setAlgorithm(uint8_t value) {
 
 void InstrumentHandler::buildDefaultInstrument() {
   voice_setAlgorithm(0); // 6OP Additive (No FM ensures _something_ is gonna sound)
-
+  global_setVibratoDepth(1);
   setActiveChannel(0);   // 1.OP1 and 1.OP2
     ch_setStereoSwitches(0b11); // Enable sound output on Left and Right
     ch_setMultiplier(1 << 12);  // No frequency scaling
     ch_setFeedback(6);
       setActiveOperator(0); // OP1
         op_setAmplitude(25); // Max. amplitude
-        op_setAttack(15);   // Instant Reaction
-        op_setDecay(0);     // No decay
-        op_setSustain(1);  // Doesn't really make an effect with 0 decay
+        op_setAttack(10);   // Instant Reaction
+        op_setDecay(5);     // No decay
+        op_setSustain(15);  // Doesn't really make an effect with 0 decay
         op_setRelease(10);   // Instant stop
         op_setWaveform(2);  // Sinewave (default anyway)
         op_setUseVibratro(1);
@@ -135,12 +135,11 @@ void InstrumentHandler::buildDefaultInstrument() {
         op_setAmplitude(10); // Max. amplitude
         op_setAttack(15);   // Instant Reaction
         op_setDecay(4);     // No decay
-        op_setSustain(1);  // Doesn't really make an effect with 0 decay
-        op_setRelease(10);   // Instant stop
-        op_setWaveform(6);  
+        op_setSustain(5);  // Doesn't really make an effect with 0 decay
+        op_setRelease(5);   // Instant stop
+        op_setWaveform(4);  
         op_setUseVibratro(1);
 
-/*
   setActiveChannel(1);  
     ch_setStereoSwitches(0b10); 
     ch_setMultiplier((1 << 12) + 20); 
@@ -178,6 +177,6 @@ void InstrumentHandler::buildDefaultInstrument() {
         op_setDecay(3);     
         op_setSustain(15);  
         op_setRelease(7);   
-        op_setWaveform(6);
-        op_setUseVibratro(1);*/
+        op_setWaveform(4);
+        op_setUseVibratro(1);
 }

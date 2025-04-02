@@ -1,13 +1,13 @@
 #include <Arduino.h>
 #include <cstdint>
-#include <MIDI.h>
 #include "iobus.h"
+#include "ui.h"
 #include "codec.h"
-#include "display.h"
+#include <MIDI.h>
+#include "wrangler.h"
 #include "instrument.h"
 #include "instrument_handler.h"
 #include "voice_rack.h"
-#include "wrangler.h"
 
 // Settings
 constexpr int SERIAL_BAUD_RATE = 57600;
@@ -48,7 +48,7 @@ void setup()
 
   
   IO::init();
-  //SPI.begin();
+  SPI.begin();
 
   // Initializing IO Bus will cause a reset pulse on the Reset line. Let's wait here for a bit 'till everything starts up 
   // This should probably just take less than 100ms... but hey... a bit extra doesn't hurt!
@@ -56,7 +56,7 @@ void setup()
 
   // Init display, will show the logo
   // Allows us to already start printing information
-  // Display::init();   
+  UI::init();
 
   // Prepare CODEC  
   Codec::write(Codec::Registers::OPL_LEFT,  3); // Enable left  sound output
@@ -77,7 +77,10 @@ void setup()
   for(int i = 0; i < 6; i++)
   {
     VoiceRack::voice[i].loadToOPL();
-  }  
+  }
+
+  //Display::clearDisplay();
+  delay(1000);
 }
 
 
@@ -85,12 +88,21 @@ auto current_millis = millis();
 auto last_frame = current_millis;
 void loop()
 {
-  /*current_millis = millis();
-  if(last_frame - current_millis >= 5)
+  MIDI.read();
+  wrangler.update();
+  current_millis = millis();
+  if(current_millis - last_frame >= 100)
   {
-    last_frame = current_millis;*/
-    MIDI.read();
-    wrangler.update();
-  //}
+    last_frame = current_millis;
+    for(int i = 0; i < 6; i++){
+      if(wrangler.held_key[i] != -1){
+        Display::print(String(wrangler.held_key[i]), i*21, 6, (wrangler.held_key[i] >> 4)-8);
+        Display::print(String(wrangler.held_key[i]), i*21, 7, (wrangler.held_key[i] >> 4));
+      }
+      else {
+        Display::print("    ", i*21, 6, 0);
+        Display::print("__  ", i*21, 7, 0);
+      }
+    }
+  }
 }
-

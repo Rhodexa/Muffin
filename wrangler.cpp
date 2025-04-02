@@ -1,4 +1,5 @@
 #include "wrangler.h"
+#include "display.h"
 
 NormalWrangler::NormalWrangler() {}
 
@@ -6,12 +7,12 @@ NormalWrangler::NormalWrangler() {}
 void NormalWrangler::handleNoteOn(uint8_t pitch)
 {
   // Find the next available voice
-  for (uint8_t i = 0; i < 7; i++) // 0 0 0 0 0 0
+  for (uint8_t i = 0; i < 6; i++) // 0 0 0 0 0 0
   {
-    if (held_key[m_current_voice] == -1) break;
     m_current_voice++;
     if (m_current_voice >= 6) m_current_voice = 0;
-  }
+    if (held_key[m_current_voice] == -1) break;
+  } 
   held_key[m_current_voice] = pitch;
   VoiceRack::voice[m_current_voice].setPitch(pitch << 16);
   VoiceRack::voice[m_current_voice].sendNoteOn();

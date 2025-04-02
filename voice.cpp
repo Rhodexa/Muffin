@@ -107,14 +107,16 @@ void Voice::loadToOPL()
   {
     for(uint8_t op = 0; op < 2; op++)
     {
-      /* uint8_t reg_40_reformat = instrument->chan[ch].op[op].reg_40;
+
+      uint8_t reg_40_reformat = instrument->chan[ch].op[op].reg_40;
       uint8_t total_level = reg_40_reformat & 0x3F;
-      if (instrument->flags_is_last_in_chain & (0b00100000 >> (ch*2 + op)))
+      if (instrument->flags_velocity_scaled_amplitude & (0b00100000 >> (ch*2 + op)))
         total_level = ( (total_level << 7) * m_volume_scale ) >> 7;
       reg_40_reformat &= 0xC0;
-      reg_40_reformat |= (0x3F - total_level) & 0x3F; */
+      reg_40_reformat |= (0x3F - total_level) & 0x3F;
+
       OPL::write((op_base + 0x20), (instrument->chan[ch].op[op].reg_20 | 0x20)); // AM | VIB | EGT(always set) | KSR | MULT
-      OPL::write((op_base + 0x40), (instrument->chan[ch].op[op].reg_40));        // KSL     | Total Level
+      OPL::write((op_base + 0x40), (reg_40_reformat));        // KSL     | Total Level
       OPL::write((op_base + 0x60), (instrument->chan[ch].op[op].reg_60));        // ATTACK  | DECAY
       OPL::write((op_base + 0x80), (instrument->chan[ch].op[op].reg_80));        // SUSTAIN | RELEASE
       OPL::write((op_base + 0xE0), (instrument->chan[ch].op[op].reg_E0));        // Waveform      

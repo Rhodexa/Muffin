@@ -29,7 +29,9 @@ typedef struct Instrument {
     // Voice volume is controlled by the last operators in the algorithm chain. These flags have information about which operators are last in the chain.
     // each byte in this table is a set of six flags
     // Flags are set up by setAlgorithm()
-    uint8_t flags_is_last_in_chain; // [  *   *   CH3OP2 CH2OP2 CH1OP2 CH3OP1 CH2OP1 CH1OP1 ]
+    // [  *   *   CH3OP2 CH2OP2 CH1OP2 CH3OP1 CH2OP1 CH1OP1 ]
+    uint8_t flags_velocity_scaled_amplitude; 
+    uint8_t flags_is_last_in_chain;
 
     // Reg 0xBD [DAM, DVB, RYT, BD, SD, TOM, TC, HH] we only use the first two bits, though.
     uint8_t vibrato_tremolo_depth_flags;   

@@ -11,22 +11,22 @@ void InstrumentHandler::setActiveOperator(uint8_t op){ m_operator = op; }
 void InstrumentHandler::setActiveChannel(uint8_t ch){ m_channel = ch;}
 
 // Operators
-void InstrumentHandler::op_setUseTremolo(uint8_t value)     { Toolbits::writeField(instrument->chan[m_channel].op[m_operator].reg_20, 0b10000000, 7, value); }
-void InstrumentHandler::op_setUseVibratro(uint8_t value)    { Toolbits::writeField(instrument->chan[m_channel].op[m_operator].reg_20, 0b01000000, 6, value); }
-void InstrumentHandler::op_setKeyScaleRate(uint8_t value)   { Toolbits::writeField(instrument->chan[m_channel].op[m_operator].reg_20, 0b00010000, 4, value); }
-void InstrumentHandler::op_setMultiplier(uint8_t value)     { Toolbits::writeField(instrument->chan[m_channel].op[m_operator].reg_20, 0b00001111, 0, value); }
-void InstrumentHandler::op_setKeyScaleLevel(uint8_t value)  { Toolbits::writeField(instrument->chan[m_channel].op[m_operator].reg_40, 0b11000000, 6, value); }
-void InstrumentHandler::op_setAmplitude(uint8_t value)      { Toolbits::writeField(instrument->chan[m_channel].op[m_operator].reg_40, 0b00111111, 0, value); }
-void InstrumentHandler::op_setAttack(uint8_t value)         { Toolbits::writeField(instrument->chan[m_channel].op[m_operator].reg_60, 0b11110000, 4, value); }
-void InstrumentHandler::op_setDecay(uint8_t value)          { Toolbits::writeField(instrument->chan[m_channel].op[m_operator].reg_60, 0b00001111, 0, value); }
-void InstrumentHandler::op_setSustain(uint8_t value)        { Toolbits::writeField(instrument->chan[m_channel].op[m_operator].reg_80, 0b11110000, 4, value); }
-void InstrumentHandler::op_setRelease(uint8_t value)        { Toolbits::writeField(instrument->chan[m_channel].op[m_operator].reg_80, 0b00001111, 0, value); }
-void InstrumentHandler::op_setWaveform(uint8_t value)       { Toolbits::writeField(instrument->chan[m_channel].op[m_operator].reg_E0, 0b00000111, 0, value); }
+void InstrumentHandler::op_setUseTremolo(uint8_t value)     { writeField(instrument->chan[m_channel].op[m_operator].reg_20, 0b10000000, 7, value); }
+void InstrumentHandler::op_setUseVibratro(uint8_t value)    { writeField(instrument->chan[m_channel].op[m_operator].reg_20, 0b01000000, 6, value); }
+void InstrumentHandler::op_setKeyScaleRate(uint8_t value)   { writeField(instrument->chan[m_channel].op[m_operator].reg_20, 0b00010000, 4, value); }
+void InstrumentHandler::op_setMultiplier(uint8_t value)     { writeField(instrument->chan[m_channel].op[m_operator].reg_20, 0b00001111, 0, value); }
+void InstrumentHandler::op_setKeyScaleLevel(uint8_t value)  { writeField(instrument->chan[m_channel].op[m_operator].reg_40, 0b11000000, 6, value); }
+void InstrumentHandler::op_setAmplitude(uint8_t value)      { writeField(instrument->chan[m_channel].op[m_operator].reg_40, 0b00111111, 0, value); }
+void InstrumentHandler::op_setAttack(uint8_t value)         { writeField(instrument->chan[m_channel].op[m_operator].reg_60, 0b11110000, 4, value); }
+void InstrumentHandler::op_setDecay(uint8_t value)          { writeField(instrument->chan[m_channel].op[m_operator].reg_60, 0b00001111, 0, value); }
+void InstrumentHandler::op_setSustain(uint8_t value)        { writeField(instrument->chan[m_channel].op[m_operator].reg_80, 0b11110000, 4, value); }
+void InstrumentHandler::op_setRelease(uint8_t value)        { writeField(instrument->chan[m_channel].op[m_operator].reg_80, 0b00001111, 0, value); }
+void InstrumentHandler::op_setWaveform(uint8_t value)       { writeField(instrument->chan[m_channel].op[m_operator].reg_E0, 0b00000111, 0, value); }
 
 // Channels
-void InstrumentHandler::ch_setFeedback(uint8_t value)       { Toolbits::writeField(instrument->chan[m_channel].reg_C0, 0b00001110, 1, value); }
-void InstrumentHandler::ch_setStereoSwitches(uint8_t value) { Toolbits::writeField(instrument->chan[m_channel].reg_C0, 0b00110000, 4, value); }
-void InstrumentHandler::ch_setMultiplier(uint16_t value)    { instrument->chan[m_channel].multiplier = value; }
+void InstrumentHandler::ch_setFeedback(uint8_t value)       { writeField(instrument->chan[m_channel].reg_C0, 0b00001110, 1, value); }
+void InstrumentHandler::ch_setStereoSwitches(uint8_t value) { writeField(instrument->chan[m_channel].reg_C0, 0b00110000, 4, value); }
+void InstrumentHandler::ch_setDetune(uint16_t value)    { instrument->chan[m_channel].multiplier = value; }
 
 // Globals
 void InstrumentHandler::global_setVibratoDepth(uint8_t value){
@@ -114,69 +114,34 @@ void InstrumentHandler::voice_setAlgorithm(uint8_t value) {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+// Load an instrument array (such as from a file on a flash or eeprom) into an Instrument object
+void InstrumentHandler::load(uint8_t* file)
+{
+  uint16_t cursor = 0;
+  // load channels and operators
+  for(int ch = 0; ch < 3; ch++)
+  {
+    for(int op = 0; op < 2; op++)
+    {
+      instrument->chan[ch].op[op].reg_20 = file[cursor++];
+    }
+  }
+  instrument->algorithm = file[cursor++];
+  instrument->vibrato_tremolo_depth_flags = file[cursor++];
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 void InstrumentHandler::buildDefaultInstrument() {
-  voice_setAlgorithm(0); // 6OP Additive (No FM ensures _something_ is gonna sound)
-  global_setVibratoDepth(1);
-  setActiveChannel(0);   // 1.OP1 and 1.OP2
-    ch_setStereoSwitches(0b11); // Enable sound output on Left and Right
-    ch_setMultiplier(1 << 12);  // No frequency scaling
-    ch_setFeedback(6);
-      setActiveOperator(0); // OP1
-        op_setAmplitude(25); // Max. amplitude
-        op_setAttack(10);   // Instant Reaction
-        op_setDecay(5);     // No decay
-        op_setSustain(15);  // Doesn't really make an effect with 0 decay
-        op_setRelease(10);   // Instant stop
-        op_setWaveform(2);  // Sinewave (default anyway)
-        op_setUseVibratro(1);
-
-      setActiveOperator(1); // OP1
-        op_setMultiplier(1);
-        op_setAmplitude(10); // Max. amplitude
-        op_setAttack(15);   // Instant Reaction
-        op_setDecay(4);     // No decay
-        op_setSustain(5);  // Doesn't really make an effect with 0 decay
-        op_setRelease(5);   // Instant stop
-        op_setWaveform(4);  
-        op_setUseVibratro(1);
-
-  setActiveChannel(1);  
-    ch_setStereoSwitches(0b10); 
-    ch_setMultiplier((1 << 12) + 20); 
+  voice_setAlgorithm(0);
+  setActiveChannel(0);
+    ch_setStereoSwitches(0b11);
+    ch_setDetune(1 << 12);
       setActiveOperator(0);
-        op_setAmplitude(64/2);
-        op_setAttack(15);   
-        op_setDecay(4);     
-        op_setSustain(15); 
-        op_setRelease(7);   
-        op_setWaveform(2);  
-
-      setActiveOperator(1);
-        op_setAmplitude(10); 
-        op_setAttack(15);   
-        op_setDecay(3);     
-        op_setSustain(15);  
-        op_setRelease(7);   
+        op_setAmplitude(0);
+        op_setAttack(15);
+        op_setDecay(0);
+        op_setSustain(0);
+        op_setRelease(15);
         op_setWaveform(0);
-        op_setUseVibratro(1);
-
-  setActiveChannel(2);  
-    ch_setStereoSwitches(0b01); 
-    ch_setMultiplier((1 << 12) - 20); 
-      setActiveOperator(0);
-        op_setAmplitude(64/2);
-        op_setAttack(15);   
-        op_setDecay(4);     
-        op_setSustain(15); 
-        op_setRelease(7);   
-        op_setWaveform(1);  
-
-      setActiveOperator(1);
-        op_setAmplitude(10); 
-        op_setAttack(15);   
-        op_setDecay(3);     
-        op_setSustain(15);  
-        op_setRelease(7);   
-        op_setWaveform(4);
-        op_setUseVibratro(1);
 }

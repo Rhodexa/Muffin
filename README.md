@@ -2,6 +2,7 @@
 6-voice MIDI-compatible synth module using OPL3
 
 ---
+Brainstorming...
 
 | MIDI | Shaper | Wrangler | Voice | Channel | Operator |
 | ---- | ------ | -------- | ----- | ------- | -------- |

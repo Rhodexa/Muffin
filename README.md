@@ -2,7 +2,7 @@
 6-voice MIDI-compatible synth module using OPL3
 
 ---
-![screenshot](isolated/algorithms.png)
+![screenshot](isolated/assests/algorithms.png)
 
 Brainstorming...
 
